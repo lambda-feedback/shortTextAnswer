@@ -7,6 +7,7 @@ WORKDIR /app
 # Copy and install any packages/modules needed for your evaluation script.
 COPY requirements.txt .
 RUN pip3 install -r requirements.txt
+RUN python -m nltk.downloader wordnet
 
 # Copy the evaluation and testing scripts
 COPY evaluation.py ./app/
