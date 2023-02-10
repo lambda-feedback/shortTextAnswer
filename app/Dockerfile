@@ -13,6 +13,7 @@ ENV NLTK_DATA=/usr/share/nltk_data
 COPY requirements.txt .
 RUN pip3 install -r requirements.txt
 RUN python -m nltk.downloader wordnet
+RUN python -m nltk.downloader brown
 
 # Copy the evaluation and testing scripts
 COPY evaluation.py fr./app/

@@ -37,7 +37,8 @@ def evaluation_function(response, answer, params):
             "is_correct": True,
             "result": {
                 "similarity_value": similarity
-            }
+            },
+            "feedback": "a string"
         }
 
     else:
