@@ -4,13 +4,18 @@ FROM rabidsheep55/python-base-eval-layer
 
 WORKDIR /app
 
+RUN mkdir /usr/share/nltk_data
+
+ARG NLTK_DATA=/usr/share/nltk_data
+
+ENV NLTK_DATA=/usr/share/nltk_data
 # Copy and install any packages/modules needed for your evaluation script.
 COPY requirements.txt .
 RUN pip3 install -r requirements.txt
 RUN python -m nltk.downloader wordnet
 
 # Copy the evaluation and testing scripts
-COPY evaluation.py ./app/
+COPY evaluation.py fr./app/
 COPY evaluation_tests.py ./app/
 
 # Copy Documentation
