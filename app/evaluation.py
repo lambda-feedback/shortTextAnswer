@@ -32,15 +32,23 @@ def evaluation_function(response, answer, params):
     return types and that evaluation_function() is the main function used 
     to output the evaluation response.
     """
-    return {
-        "is_correct": True,
-        "result": {
-            "similarity_value": 1
-        },
-        "feedback": "a string"
-    }
 
     similarity, response_scores, answer_scores = sentence_similarity(response, answer)
+
+    if params is not None and "keywords" in params:
+        keywords = params["keywords"]
+        for keyword in keywords:
+            for resp_score in response_scores:
+                if resp_score[1] == keyword:
+                    continue
+            return {
+                "is_correct": False,
+                "result": {
+                    "similarity_value": similarity,
+                    "Problematic_word": keyword
+                },
+                "feedback": f"Cannot determine if the answer is correct. Please provide more details about '{keyword}"
+            }
 
     if similarity > 0.8:
         return {
@@ -48,22 +56,24 @@ def evaluation_function(response, answer, params):
             "result": {
                 "similarity_value": similarity
             },
-            "feedback": "a string"
+            "feedback": "Correct!"
         }
 
     else:
         dif = 0
         word = None
         for (resp_score, ans_score) in zip(response_scores, answer_scores):
-            if np.abs(resp_score[0] - ans_score[0]) > dif:
-                dif = np.abs(resp_score[0] - ans_score[0])
+            if ans_score[0] - resp_score[0] > dif:
+                dif = ans_score[0] - resp_score[0]
                 word = resp_score[1]
+
         return {
             "is_correct": False,
             "result": {
                 "similarity_value": similarity,
                 "Problematic_word": word
-            }
+            },
+            "feedback": f"Cannot determine if the answer is correct. Please provide more details about '{word}"
         }
 
 
@@ -145,4 +155,5 @@ def sentence_similarity(response: str, answer: str):
 
 if __name__ == "__main__":
     preprocess_word_freqs()
-    print(evaluation_function("A list of characters", "a sequence of characters", None))
+    print(evaluation_function("A banana of characters", "A list of characters", None))
+    print(evaluation_function("An undirected graph with no cycles and no double edges", "A simple undirected acyclic graph", {"keywords": ["acyclic"]}))
