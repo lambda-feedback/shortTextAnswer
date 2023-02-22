@@ -24,7 +24,7 @@ class TestEvaluationFunction(unittest.TestCase):
         as it should.
     """
     def test_returns_is_correct_true(self):
-        response, answer, params = None, None, dict()
+        response, answer, params = "A xor gate takes 2 inputs", "There are 2 inputs in a xor gate", dict()
         result = evaluation_function(response, answer, params)
         
         self.assertEqual(result.get("is_correct"), True)

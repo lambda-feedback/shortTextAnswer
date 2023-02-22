@@ -6,6 +6,7 @@ import numpy.linalg
 from nltk.corpus import wordnet
 from nltk.corpus import brown
 
+
 def evaluation_function(response, answer, params):
     """
     Function used to evaluate a student response.
@@ -56,12 +57,16 @@ def evaluation_function(response, answer, params):
             }
         }
 
+
 freqs = {}
+
+
 def preprocess_word_freqs():
     for word in brown.words():
         if not word in freqs:
             freqs[word] = 0
         freqs[word] = freqs[word] + 1
+
 
 def word_information_content(word):
     if word not in freqs:
@@ -70,6 +75,7 @@ def word_information_content(word):
         f = freqs[word]
     return 1 - (np.log(f + 1)) / (np.log(len(brown.words()) + 1))
 
+
 def word_similarity(word1, word2):
     synsets1 = wordnet.synsets(word1)
     synsets2 = wordnet.synsets(word2)
@@ -77,10 +83,11 @@ def word_similarity(word1, word2):
     # Find LCA
     dist = 0
     for synset1, synset2 in zip(synsets1, synsets2):
-        #if synset1.pos() is not synset2.pos():
+        # if synset1.pos() is not synset2.pos():
         #    continue
         dist = max(dist, synset1.wup_similarity(synset2))
     return dist
+
 
 def sentence_similarity(response: str, answer: str):
     for punc in string.punctuation:
@@ -103,7 +110,8 @@ def sentence_similarity(response: str, answer: str):
                 if word_similarity(word, other_word) > best_similarity:
                     best_similarity = word_similarity(word, other_word)
                     best_word = other_word
-        response_scores.append((best_similarity * word_information_content(word) * word_information_content(best_word), word))
+        response_scores.append(
+            (best_similarity * word_information_content(word) * word_information_content(best_word), word))
 
     for word in all_words:
         best_similarity = 0
@@ -115,7 +123,8 @@ def sentence_similarity(response: str, answer: str):
                 if word_similarity(word, other_word) > best_similarity:
                     best_similarity = word_similarity(word, other_word)
                     best_word = other_word
-        answer_scores.append((best_similarity * word_information_content(word) * word_information_content(best_word), word))
+        answer_scores.append(
+            (best_similarity * word_information_content(word) * word_information_content(best_word), word))
 
     print(response_scores)
     print(answer_scores)
@@ -124,8 +133,9 @@ def sentence_similarity(response: str, answer: str):
     for idx in range(len(response_scores)):
         response_scores[idx] = response_scores[idx][0]
         answer_scores[idx] = answer_scores[idx][0]
-    score = np.dot(response_scores, answer_scores)/(np.linalg.norm(response_scores) * np.linalg.norm(answer_scores))
+    score = np.dot(response_scores, answer_scores) / (np.linalg.norm(response_scores) * np.linalg.norm(answer_scores))
     return score, resp_scores, ans_scores
+
 
 if __name__ == "__main__":
     preprocess_word_freqs()
