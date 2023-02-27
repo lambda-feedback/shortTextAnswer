@@ -1,15 +1,14 @@
-import math
-import string
-
-import nltk
-import numpy as np
-import numpy.linalg
-
-from nltk.corpus import wordnet
-from nltk.corpus import brown
-
-
 def evaluation_function(response, answer, params):
+    import math
+    import string
+    
+    import nltk
+    import numpy as np
+    import numpy.linalg
+    
+    from nltk.corpus import wordnet
+    from nltk.corpus import brown
+
     """
     Function used to evaluate a student response.
     ---
