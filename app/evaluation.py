@@ -8,6 +8,16 @@ import numpy.linalg
 from nltk.corpus import wordnet
 from nltk.corpus import brown
 
+freqs = dict()
+
+def preprocess_word_freqs():
+    for word in brown.words():
+        if not word in freqs:
+            freqs[word] = 0
+        freqs[word] = freqs[word] + 1
+
+
+preprocess_word_freqs()
 
 def evaluation_function(response, answer, params):
     """
@@ -27,9 +37,9 @@ def evaluation_function(response, answer, params):
     Any standard python library may be used, as well as any package
     available on pip (provided it is added to requirements.txt).
 
-    The way you wish to structure you code (all in this function, or 
-    split into many) is entirely up to you. All that matters are the 
-    return types and that evaluation_function() is the main function used 
+    The way you wish to structure you code (all in this function, or
+    split into many) is entirely up to you. All that matters are the
+    return types and that evaluation_function() is the main function used
     to output the evaluation response.
     """
 
@@ -75,16 +85,6 @@ def evaluation_function(response, answer, params):
             },
             "feedback": f"Cannot determine if the answer is correct. Please provide more details about '{word}"
         }
-
-
-freqs = {}
-
-
-def preprocess_word_freqs():
-    for word in brown.words():
-        if not word in freqs:
-            freqs[word] = 0
-        freqs[word] = freqs[word] + 1
 
 def word_information_content(word):
     if word not in freqs:
@@ -154,6 +154,5 @@ def sentence_similarity(response: str, answer: str):
 
 
 if __name__ == "__main__":
-    preprocess_word_freqs()
     print(evaluation_function("A banana of characters", "A list of characters", None))
     print(evaluation_function("An undirected graph with no cycles and no double edges", "A simple undirected acyclic graph", {"keywords": ["acyclic"]}))
