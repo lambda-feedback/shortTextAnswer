@@ -8,6 +8,10 @@ import numpy.linalg
 from nltk.corpus import wordnet
 from nltk.corpus import brown
 
+try:
+    from evaluation_response_utilities import EvaluationResponse
+except ImportError:
+    from .evaluation_response_utilities import EvaluationResponse
 
 def evaluation_function(response, answer, params):
     """
@@ -33,6 +37,12 @@ def evaluation_function(response, answer, params):
     to output the evaluation response.
     """
 
+    # Creating an EvaluationResponse object that simplifies handling of feedback
+    eval_response = EvaluationResponse()
+
+    # Note: Here it is assumed that a response is incorrect until proven otherwise
+    eval_response.is_correct = False
+
     similarity, response_scores, answer_scores = sentence_similarity(response, answer)
 
     if params is not None and "keywords" in params:
@@ -41,24 +51,19 @@ def evaluation_function(response, answer, params):
             for resp_score in response_scores:
                 if resp_score[1] == keyword:
                     continue
-            return {
-                "is_correct": False,
-                "result": {
-                    "similarity_value": similarity,
-                    "Problematic_word": keyword
-                },
-                "feedback": f"Cannot determine if the answer is correct. Please provide more details about '{keyword}"
+            eval_response.is_correct = False
+            eval_response.add_feedback("INDETERMINABLE", f"Cannot determine if the answer is correct. Please provide more details about '{keyword}")
+            eval_response.result = {
+                "similarity_value": similarity,
+                "Problematic_word": keyword
             }
+            return eval_response.serialise()
 
     if similarity > 0.8:
-        return {
-            "is_correct": True,
-            "result": {
-                "similarity_value": similarity
-            },
-            "feedback": "Correct!"
+        eval_response.is_correct = True
+        eval_response.result = {
+            "similarity_value": similarity
         }
-
     else:
         dif = 0
         word = None
@@ -67,14 +72,14 @@ def evaluation_function(response, answer, params):
                 dif = ans_score[0] - resp_score[0]
                 word = resp_score[1]
 
-        return {
-            "is_correct": False,
-            "result": {
-                "similarity_value": similarity,
-                "Problematic_word": word
-            },
-            "feedback": f"Cannot determine if the answer is correct. Please provide more details about '{word}"
+        eval_response.is_correct = False
+        eval_response.add_feedback("HAS_PROBLEMATIC_WORD", f"Cannot determine if the answer is correct. Please provide more details about '{word}")
+        eval_response.result = {
+            "similarity_value": similarity,
+            "Problematic_word": word
         }
+
+    return eval_response.serialise()
 
 
 freqs = {}
@@ -82,9 +87,10 @@ freqs = {}
 
 def preprocess_word_freqs():
     for word in brown.words():
-        if not word in freqs:
+        if word not in freqs:
             freqs[word] = 0
         freqs[word] = freqs[word] + 1
+
 
 def word_information_content(word):
     if word not in freqs:
@@ -154,6 +160,5 @@ def sentence_similarity(response: str, answer: str):
 
 
 if __name__ == "__main__":
-    preprocess_word_freqs()
     print(evaluation_function("A banana of characters", "A list of characters", None))
     print(evaluation_function("An undirected graph with no cycles and no double edges", "A simple undirected acyclic graph", {"keywords": ["acyclic"]}))
