@@ -34,13 +34,6 @@ def evaluation_function(response, answer, params):
     return types and that evaluation_function() is the main function used 
     to output the evaluation response.
     """
-    return {
-        "is_correct": True,
-        "result": {
-            "similarity_value": 1
-        },
-        "feedback": "Correct!"
-    }
     similarity, response_scores, answer_scores = sentence_similarity(response, answer)
 
     if params is not None and "keywords" in params:
