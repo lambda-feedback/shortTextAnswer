@@ -11,6 +11,8 @@ ARG NLTK_DATA=/usr/share/nltk_data
 ENV NLTK_DATA=/usr/share/nltk_data
 # Copy and install any packages/modules needed for your evaluation script.
 COPY requirements.txt .
+COPY brown_length .
+COPY word_freqs .
 RUN pip3 install -r requirements.txt
 RUN python -m nltk.downloader wordnet
 RUN python -m nltk.downloader brown
