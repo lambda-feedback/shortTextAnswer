@@ -9,7 +9,9 @@ def preprocess_word_freqs():
 
     with open('word_freqs', 'wb') as fp:
         pickle.dump(freqs, fp)
-        print('dictionary saved successfully to file')
+
+    with open('brown_length', 'wb') as fp:
+        pickle.dump(len(brown.words()), fp)
 
 if __name__ == "__main__":
     preprocess_word_freqs()
