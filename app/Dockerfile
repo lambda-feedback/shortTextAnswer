@@ -18,8 +18,12 @@ RUN python -m nltk.downloader wordnet
 RUN python -m nltk.downloader brown
 
 # Copy the evaluation and testing scripts
-COPY evaluation.py fr./app/
+COPY evaluation.py ./app/
+COPY brown_length ./app/
+COPY word_freqs ./app/
 COPY evaluation_tests.py ./app/
+RUN ls .
+RUN ls ./app
 
 # Copy Documentation
 COPY docs/dev.md ./app/docs/dev.md

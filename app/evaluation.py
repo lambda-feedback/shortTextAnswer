@@ -85,9 +85,9 @@ def evaluation_function(response, answer, params):
         }
 
 
-with open('brown_length', 'rb') as fp:
+with open('./brown_length', 'rb') as fp:
     blen = pickle.load(fp)
-with open('word_freqs', 'rb') as fp:
+with open('./word_freqs', 'rb') as fp:
     freqs = pickle.load(fp)
 
 
