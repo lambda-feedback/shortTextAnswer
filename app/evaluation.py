@@ -86,7 +86,7 @@ def evaluation_function(response, answer, params):
         }
 
 
-blen = len(brown.words())
+blen = 0#len(brown.words())
 with open('word_freqs', 'rb') as fp:
     freqs = pickle.load(fp)
 
