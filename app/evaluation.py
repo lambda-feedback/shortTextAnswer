@@ -29,14 +29,6 @@ def evaluation_function(response, answer, params):
     to output the evaluation response.
     """
 
-    return {
-        "is_correct": True,
-        "result": {
-            "similarity_value": 1
-        },
-        "feedback": "Correct!"
-    }
-
     similarity, response_scores, answer_scores = sentence_similarity(response, answer)
 
 
@@ -94,9 +86,10 @@ def word_information_content(word):
     return 1 - (np.log(f + 1)) / (np.log(blen + 1))
 
 
+with open('w2v', 'rb') as fp:
+    w2v = pickle.load(fp)
+
 def word_similarity(word1, word2):
-    with open('w2v', 'rb') as fp:
-        w2v = pickle.load(fp)
     if word1 == word2:
         return 1
     if not w2v.has_index_for(word1) or not w2v.has_index_for(word2):
