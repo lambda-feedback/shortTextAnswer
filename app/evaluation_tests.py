@@ -29,5 +29,38 @@ class TestEvaluationFunction(unittest.TestCase):
         
         self.assertEqual(result.get("is_correct"), True)
 
+    def test_reynolds_number_is_correct(self):
+        answer, params = 'Density, Velocity, Viscosity, Length', dict()
+        correct_responses = [
+            'density,velocity,viscosity,length',
+            'Density,Velocity,Viscosity,Length',
+            'density,characteristic velocity,viscosity,characteristic length',
+            'Density,Velocity,Shear viscosity,Length',
+            #'density,velocity,viscosity,lengthscale',
+            'density,velocity,shear viscosity,length',
+            #'density,characteristic velocity,shear viscosity,characteristic lengthscale',
+            #'density,velocity,shear viscosity,characteristic lengthscale',
+            'density,velocity,viscosity,length scale',
+            'pressure,characteristic velocity of flow,shear viscosity,characteristic length scale',
+        ]
+
+        for response in correct_responses:
+            result = evaluation_function(response, answer, params)
+
+            self.assertEqual(result.get("is_correct"), True, msg=f'Response: {response}')
+
+    def test_reynolds_number_is_incorrect(self):
+        answer, params = 'Density, Velocity, Viscosity, Length', dict()
+        incorrect_responses = [
+            #'density,,,',
+            'rho,u,mu,L',
+            'density,velocity,visc,',
+        ]
+
+        for response in incorrect_responses:
+            result = evaluation_function(response, answer, params)
+
+            self.assertEqual(result.get("is_correct"), False, msg=f'Response: {response}')
+
 if __name__ == "__main__":
     unittest.main()

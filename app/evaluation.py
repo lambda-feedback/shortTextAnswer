@@ -1,14 +1,9 @@
-import math
-import string
 import pickle
+import string
 import time
 
-import nltk
 import numpy as np
 import numpy.linalg
-
-from nltk.corpus import wordnet
-from nltk.corpus import brown
 
 
 def evaluation_function(response, answer, params):
@@ -78,10 +73,12 @@ def evaluation_function(response, answer, params):
         }
 
 
-with open('./brown_length', 'rb') as fp:
+with open('brown_length', 'rb') as fp:
     blen = pickle.load(fp)
-with open('./word_freqs', 'rb') as fp:
+with open('word_freqs', 'rb') as fp:
     freqs = pickle.load(fp)
+with open('w2v', 'rb') as fp:
+    w2v = pickle.load(fp)
 
 
 def word_information_content(word):
@@ -93,19 +90,16 @@ def word_information_content(word):
 
 
 def word_similarity(word1, word2):
-    synsets1 = wordnet.synsets(word1)
-    synsets2 = wordnet.synsets(word2)
-
-    # Find LCA
-    dist = 0
-    for synset1, synset2 in zip(synsets1, synsets2):
-        # if synset1.pos() is not synset2.pos():
-        #    continue
-        dist = max(dist, synset1.wup_similarity(synset2))
-    return dist
+    if word1 == word2:
+        return 1
+    if not w2v.has_index_for(word1) or not w2v.has_index_for(word2):
+        return 0
+    return w2v.similarity(word1, word2)
 
 
 def sentence_similarity(response: str, answer: str):
+    response = response.lower()
+    answer = answer.lower()
     for punc in string.punctuation:
         response = response.replace(punc, ' ')
         answer = answer.replace(punc, ' ')
@@ -116,15 +110,13 @@ def sentence_similarity(response: str, answer: str):
     def sencence_scores(common_words, sentence):
         scores = []
         for word in common_words:
-            best_similarity = 0
+            best_similarity = -1
             best_word = word
-            if word in sentence:
-                best_similarity = 1
-            else:
-                for other_word in sentence:
-                    if word_similarity(word, other_word) > best_similarity:
-                        best_similarity = word_similarity(word, other_word)
-                        best_word = other_word
+            for other_word in sentence:
+                similarity = word_similarity(word, other_word)
+                if similarity > best_similarity:
+                    best_similarity = similarity
+                    best_word = other_word
             scores.append(
                 (best_similarity * word_information_content(word) * word_information_content(best_word), word))
         return scores
@@ -140,9 +132,22 @@ def sentence_similarity(response: str, answer: str):
     score = np.dot(response_scores, answer_scores) / (np.linalg.norm(response_scores) * np.linalg.norm(answer_scores))
     return score, resp_scores, ans_scores
 
+def sentence_similarity_mean_w2v(response: str, answer: str):
+    response = response.lower()
+    answer = answer.lower()
+    for punc in string.punctuation:
+        response = response.replace(punc, ' ')
+        answer = answer.replace(punc, ' ')
+    response_words = response.split()
+    answer_words = answer.split()
+    # TODO
 
 if __name__ == "__main__":
     pass
-    #print(time.process_time())
-    #print(evaluation_function("A banana of characters", "A list of characters", None))
-    #print(time.process_time())
+    # print(time.process_time())
+    # print(word_similarity('density', 'density'))
+    # print(word_similarity('density', 'velocity'))
+    # print(word_similarity('density', 'viscosity'))
+    # print(word_similarity('density', 'length'))
+    # print(evaluation_function("rho,u,mu,L", "Density, Velocity, Viscosity, Length", None))
+    # print(time.process_time())
