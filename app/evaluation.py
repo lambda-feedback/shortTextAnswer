@@ -74,11 +74,7 @@ def evaluation_function(response, answer, params):
         }
 
 
-def word_information_content(word):
-    with open('brown_length', 'rb') as fp:
-        blen = pickle.load(fp)
-    with open('word_freqs', 'rb') as fp:
-        freqs = pickle.load(fp)
+def word_information_content(word, blen, freqs):
     if word not in freqs:
         f = 0
     else:
@@ -86,10 +82,7 @@ def word_information_content(word):
     return 1 - (np.log(f + 1)) / (np.log(blen + 1))
 
 
-with open('w2v', 'rb') as fp:
-    w2v = pickle.load(fp)
-
-def word_similarity(word1, word2):
+def word_similarity(word1, word2, w2v):
     if word1 == word2:
         return 1
     if not w2v.has_index_for(word1) or not w2v.has_index_for(word2):
@@ -107,18 +100,25 @@ def sentence_similarity(response: str, answer: str):
     answer_words = answer.split()
     all_words = list(set((response_words + answer_words)))
 
+    with open('brown_length', 'rb') as fp:
+        blen = pickle.load(fp)
+    with open('word_freqs', 'rb') as fp:
+        freqs = pickle.load(fp)
+    with open('w2v', 'rb') as fp:
+        w2v = pickle.load(fp)
+
     def sencence_scores(common_words, sentence):
         scores = []
         for word in common_words:
             best_similarity = -1
             best_word = word
             for other_word in sentence:
-                similarity = word_similarity(word, other_word)
+                similarity = word_similarity(word, other_word, w2v)
                 if similarity > best_similarity:
                     best_similarity = similarity
                     best_word = other_word
             scores.append(
-                (best_similarity * word_information_content(word) * word_information_content(best_word), word))
+                (best_similarity * word_information_content(word, blen, freqs) * word_information_content(best_word, blen, freqs), word))
         return scores
 
     response_scores = sencence_scores(all_words, response_words)
