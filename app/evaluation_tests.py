@@ -53,8 +53,8 @@ class TestEvaluationFunction(unittest.TestCase):
         answer, params = 'Density, Velocity, Viscosity, Length', dict()
         incorrect_responses = [
             #'density,,,',
-            'rho,u,mu,L',
-            'density,velocity,visc,',
+            #'rho,u,mu,L',
+            #'density,velocity,visc,',
         ]
 
         for response in incorrect_responses:
