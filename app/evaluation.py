@@ -49,6 +49,8 @@ def evaluation_function(response, answer, params):
     #             "feedback": f"Cannot determine if the answer is correct. Please provide more details about '{keyword}"
     #         }
 
+
+
     if w2v_similarity > 0.75:
         return {
             "is_correct": True,
@@ -151,7 +153,7 @@ def sentence_similarity_mean_w2v(response: str, answer: str):
     answer_embeddings = [w2v[word] for word in answer if w2v.has_index_for(word)]
     response_vector = np.mean(response_embeddings, axis=0)
     answer_vector = np.mean(answer_embeddings, axis=0)
-    return np.dot(response_vector, answer_vector) / (np.linalg.norm(response_vector) * np.linalg.norm(answer_vector))
+    return float(np.dot(response_vector, answer_vector) / (np.linalg.norm(response_vector) * np.linalg.norm(answer_vector)))
     # TODO
 
 if __name__ == "__main__":

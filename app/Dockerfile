@@ -17,6 +17,8 @@ COPY w2v .
 RUN pip3 install -r requirements.txt
 RUN python -m nltk.downloader wordnet
 RUN python -m nltk.downloader brown
+RUN python -m nltk.downloader stopwords
+RUN python -m nltk.downloader punkt
 
 # Copy the evaluation and testing scripts
 COPY brown_length ./app/
