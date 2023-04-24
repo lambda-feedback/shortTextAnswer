@@ -2,8 +2,11 @@ import pickle
 import string
 import time
 
+import gensim
 import numpy as np
 import numpy.linalg
+from nltk.corpus import stopwords
+from nltk import word_tokenize
 
 def evaluation_function(response, answer, params):
     """
@@ -29,34 +32,34 @@ def evaluation_function(response, answer, params):
     to output the evaluation response.
     """
 
-    similarity, response_scores, answer_scores = sentence_similarity(response, answer)
+    w2v_similarity = sentence_similarity_mean_w2v(response, answer)
 
+    # if params is not None and "keywords" in params:
+    #     keywords = params["keywords"]
+    #     for keyword in keywords:
+    #         for resp_score in response_scores:
+    #             if resp_score[1] == keyword:
+    #                 continue
+    #         return {
+    #             "is_correct": False,
+    #             "result": {
+    #                 "similarity_value": similarity,
+    #                 "Problematic_word": keyword
+    #             },
+    #             "feedback": f"Cannot determine if the answer is correct. Please provide more details about '{keyword}"
+    #         }
 
-    if params is not None and "keywords" in params:
-        keywords = params["keywords"]
-        for keyword in keywords:
-            for resp_score in response_scores:
-                if resp_score[1] == keyword:
-                    continue
-            return {
-                "is_correct": False,
-                "result": {
-                    "similarity_value": similarity,
-                    "Problematic_word": keyword
-                },
-                "feedback": f"Cannot determine if the answer is correct. Please provide more details about '{keyword}"
-            }
-
-    if similarity > 0.8:
+    if w2v_similarity > 0.75:
         return {
             "is_correct": True,
             "result": {
-                "similarity_value": similarity
+                "similarity_value": w2v_similarity
             },
             "feedback": "Correct!"
         }
 
     else:
+        similarity, response_scores, answer_scores = sentence_similarity(response, answer)
         dif = 0
         word = None
         for (resp_score, ans_score) in zip(response_scores, answer_scores):
@@ -67,7 +70,7 @@ def evaluation_function(response, answer, params):
         return {
             "is_correct": False,
             "result": {
-                "similarity_value": similarity,
+                "similarity_value": w2v_similarity,
                 "Problematic_word": word
             },
             "feedback": f"Cannot determine if the answer is correct. Please provide more details about '{word}"
@@ -132,22 +135,28 @@ def sentence_similarity(response: str, answer: str):
     score = np.dot(response_scores, answer_scores) / (np.linalg.norm(response_scores) * np.linalg.norm(answer_scores))
     return score, resp_scores, ans_scores
 
+
+def preprocess_tokens(text: str):
+    text = text.lower()
+    to_remove = stopwords.words('english') + list(string.punctuation)
+    tokens = [word for word in word_tokenize(text) if word not in to_remove]
+    return tokens
+
 def sentence_similarity_mean_w2v(response: str, answer: str):
-    response = response.lower()
-    answer = answer.lower()
-    for punc in string.punctuation:
-        response = response.replace(punc, ' ')
-        answer = answer.replace(punc, ' ')
-    response_words = response.split()
-    answer_words = answer.split()
+    with open('w2v', 'rb') as fp:
+        w2v = pickle.load(fp)
+    response = preprocess_tokens(response)
+    answer = preprocess_tokens(answer)
+    response_embeddings = [w2v[word] for word in response if w2v.has_index_for(word)]
+    answer_embeddings = [w2v[word] for word in answer if w2v.has_index_for(word)]
+    response_vector = np.mean(response_embeddings, axis=0)
+    answer_vector = np.mean(answer_embeddings, axis=0)
+    return np.dot(response_vector, answer_vector) / (np.linalg.norm(response_vector) * np.linalg.norm(answer_vector))
     # TODO
 
-# if __name__ == "__main__":
-#     pass
-#     print(time.process_time())
-#     print(word_similarity('density', 'density'))
-#     print(word_similarity('density', 'velocity'))
-#     print(word_similarity('density', 'viscosity'))
-#     print(word_similarity('density', 'length'))
-#     print(evaluation_function("rho,u,mu,L", "Density, Velocity, Viscosity, Length", None))
-#     print(time.process_time())
+if __name__ == "__main__":
+    pass
+    # print(time.process_time())
+    # print(evaluation_function("density, velocity,", "Density, Velocity, Viscosity, Length", None))
+    # print(evaluation_function("test", "test", None))
+    # print(time.process_time())

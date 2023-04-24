@@ -36,10 +36,10 @@ class TestEvaluationFunction(unittest.TestCase):
             'Density,Velocity,Viscosity,Length',
             'density,characteristic velocity,viscosity,characteristic length',
             'Density,Velocity,Shear viscosity,Length',
-            #'density,velocity,viscosity,lengthscale',
+            'density,velocity,viscosity,lengthscale',
             'density,velocity,shear viscosity,length',
-            #'density,characteristic velocity,shear viscosity,characteristic lengthscale',
-            #'density,velocity,shear viscosity,characteristic lengthscale',
+            'density,characteristic velocity,shear viscosity,characteristic lengthscale',
+            'density,velocity,shear viscosity,characteristic lengthscale',
             'density,velocity,viscosity,length scale',
             'pressure,characteristic velocity of flow,shear viscosity,characteristic length scale',
         ]
@@ -52,8 +52,8 @@ class TestEvaluationFunction(unittest.TestCase):
     def test_reynolds_number_is_incorrect(self):
         answer, params = 'Density, Velocity, Viscosity, Length', dict()
         incorrect_responses = [
-            #'density,,,',
-            #'rho,u,mu,L',
+            'density,,,',
+            'rho,u,mu,L',
             #'density,velocity,visc,',
         ]
 
