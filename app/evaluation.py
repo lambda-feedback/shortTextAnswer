@@ -49,7 +49,31 @@ def evaluation_function(response, answer, params):
     #             "feedback": f"Cannot determine if the answer is correct. Please provide more details about '{keyword}"
     #         }
 
-
+    # params of the form {'keyphrase': ['phrase1', 'phrase2', ...]}
+    if params is not None and "keyphrases" in params:
+        keyphrases = params["keyphrases"]
+        for keyphrase in keyphrases:
+            response_tokens = preprocess_tokens(response)
+            keyphrase_tokens = preprocess_tokens(keyphrase)
+            window_size = len(keyphrase_tokens)
+            i = 0
+            found = False
+            while i + window_size <= len(response_tokens):
+                response_substring = " ".join(response_tokens[i:i+window_size])
+                score = sentence_similarity_mean_w2v(response_substring, keyphrase)
+                i += 1
+                if score > 0.75:
+                    found = True
+                    continue
+            if not found:
+                return {
+                    "is_correct": False,
+                    "result": {
+                        "similarity_value": w2v_similarity,
+                        "Problematic_word": keyphrase
+                    },
+                    "feedback": f"Cannot determine if the answer is correct. Could not identify '{keyphrase}"
+                }
 
     if w2v_similarity > 0.75:
         return {
@@ -151,6 +175,8 @@ def sentence_similarity_mean_w2v(response: str, answer: str):
     answer = preprocess_tokens(answer)
     response_embeddings = [w2v[word] for word in response if w2v.has_index_for(word)]
     answer_embeddings = [w2v[word] for word in answer if w2v.has_index_for(word)]
+    if len(response_embeddings) == 0 or len(answer_embeddings) == 0:
+        return 0
     response_vector = np.mean(response_embeddings, axis=0)
     answer_vector = np.mean(answer_embeddings, axis=0)
     return float(np.dot(response_vector, answer_vector) / (np.linalg.norm(response_vector) * np.linalg.norm(answer_vector)))
@@ -159,6 +185,6 @@ def sentence_similarity_mean_w2v(response: str, answer: str):
 if __name__ == "__main__":
     pass
     # print(time.process_time())
-    # print(evaluation_function("density, velocity,", "Density, Velocity, Viscosity, Length", None))
+    # print(evaluation_function("density, velocity,Visc", "Density, Velocity, Viscosity, Length", {'keyphrases': ['Density', 'Velocity', 'Viscosity', 'Length']}))
     # print(evaluation_function("test", "test", None))
     # print(time.process_time())

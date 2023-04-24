@@ -54,13 +54,41 @@ class TestEvaluationFunction(unittest.TestCase):
         incorrect_responses = [
             'density,,,',
             'rho,u,mu,L',
-            #'density,velocity,visc,',
         ]
 
         for response in incorrect_responses:
             result = evaluation_function(response, answer, params)
 
             self.assertEqual(result.get("is_correct"), False, msg=f'Response: {response}')
+
+    def test_reynolds_number_is_incorrect_with_keyphrase(self):
+        answer, params = 'Density, Velocity, Viscosity, Length', {'keyphrases': ['density', 'velocity', 'viscosity', 'length']}
+        incorrect_responses = [
+            'density,velocity,visc,',
+        ]
+
+        for response in incorrect_responses:
+            result = evaluation_function(response, answer, params)
+
+            self.assertEqual(result.get("is_correct"), False, msg=f'Response: {response}')
+
+    navier_stokes_answer = "The density of the film is uniform and constant, therefore the flow is incompressible. " \
+                           "Since we have incompressible flow, uniform viscosity, Newtonian fluid, " \
+                           "the most appropriate set of equations for the solution of the problem is the " \
+                           "Navier-Stokes equations. The Navier-Stokes equations in Cartesian coordinates are used."
+    # TODO: Navier-stokes equations
+
+    def test_navier_stokes_equation(self):
+        answer, params = self.navier_stokes_answer, dict()
+        correct_responses = [
+            #'Navier-stokes. Continuum, const and uniform density and viscosity so incompressible, newtonian. Fits all '
+            #'requirements for navier stokes'
+        ]
+
+        for response in correct_responses:
+            result = evaluation_function(response, answer, params)
+            print(result)
+            self.assertEqual(result.get("is_correct"), True, msg=f'Response: {response}')
 
 if __name__ == "__main__":
     unittest.main()
