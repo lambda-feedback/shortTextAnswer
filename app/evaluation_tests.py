@@ -61,8 +61,8 @@ class TestEvaluationFunction(unittest.TestCase):
 
             self.assertEqual(result.get("is_correct"), False, msg=f'Response: {response}')
 
-    def test_reynolds_number_is_incorrect_with_keyphrase(self):
-        answer, params = 'Density, Velocity, Viscosity, Length', {'keyphrases': ['density', 'velocity', 'viscosity', 'length']}
+    def test_reynolds_number_is_incorrect_with_keystring(self):
+        answer, params = 'Density, Velocity, Viscosity, Length', {'keystrings': [{'string': 'density'}, {'string': 'velocity'}, {'string': 'viscosity'}, {'string': 'length'}]}
         incorrect_responses = [
             'density,velocity,visc,',
         ]
@@ -75,19 +75,26 @@ class TestEvaluationFunction(unittest.TestCase):
     navier_stokes_answer = "The density of the film is uniform and constant, therefore the flow is incompressible. " \
                            "Since we have incompressible flow, uniform viscosity, Newtonian fluid, " \
                            "the most appropriate set of equations for the solution of the problem is the " \
-                           "Navier-Stokes equations. The Navier-Stokes equations in Cartesian coordinates are used."
-    # TODO: Navier-stokes equations
+                           "Navier-Stokes equations. The Navier-Stokes equations in Cartesian coordinates are used: " \
+                           "mass conservation and components of the momentum balance"
+
+    navier_stokes_params = {'keystrings': [{'string': 'Navier-Stokes equations'}, {'string': 'mass conservation'},
+                                                                    {'string': 'momentum balance'}, {'string': 'incompressible flow'},
+                                                                    {'string': 'uniform viscosity'}, {'string': 'Newtonian fluid'}]}
 
     def test_navier_stokes_equation(self):
         answer, params = self.navier_stokes_answer, dict()
         correct_responses = [
             #'Navier-stokes. Continuum, const and uniform density and viscosity so incompressible, newtonian. Fits all '
-            #'requirements for navier stokes'
+            #'requirements for navier stokes',
+            'Navier-Stokes in a Cartesian reference coordinates would be chosen for this particular flow. This is due '
+            'to the reason that the flow is Newtonian, the viscosity is uniform and constant. Additionally, '
+            'the density is uniform and constant; implying that it is an incompressible flow. This flow obeys the '
+            'main assumptions in order to employ the Navier Stokes equations.',
         ]
 
         for response in correct_responses:
             result = evaluation_function(response, answer, params)
-            print(result)
             self.assertEqual(result.get("is_correct"), True, msg=f'Response: {response}')
 
 if __name__ == "__main__":

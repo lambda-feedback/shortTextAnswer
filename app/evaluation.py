@@ -3,10 +3,12 @@ import string
 import time
 
 import gensim
+import matplotlib.pyplot as plt
 import numpy as np
 import numpy.linalg
 from nltk.corpus import stopwords
 from nltk import word_tokenize
+
 
 def evaluation_function(response, answer, params):
     """
@@ -27,61 +29,77 @@ def evaluation_function(response, answer, params):
     available on pip (provided it is added to requirements.txt).
 
     The way you wish to structure you code (all in this function, or 
-    split into many) is entirely up to you. All that matters are the 
+    split into many) is entirely     up to you. All that matters are the
     return types and that evaluation_function() is the main function used 
     to output the evaluation response.
     """
+    start_time = time.process_time()
+
+    # params of the form {'keystrings': ['keystring1', 'keystring2', ...]}
+    # keystring of the form {'string':..., 'exact_match:False', 'should_contain:True', 'custom_feedback:None}
+    if params is not None and "keystrings" in params:
+        keystrings = params["keystrings"]
+        problematic_keystring = None
+        keystring_scores = []
+        response_tokens = preprocess_tokens(response)
+        for keystring_object in keystrings:
+            # Unpack keystring object
+            keystring = keystring_object['string']
+            exact_match = keystring_object['exact_match'] if 'exact_match' in keystring_object else False
+            should_contain = keystring_object['should_contain'] if 'should_contain' in keystring_object else True
+            custom_feedback = keystring_object['custom_feedback'] if 'custom_feedback' in keystring_object else None
+            keystring_tokens = preprocess_tokens(keystring)
+
+            # Sliding window matching
+            window_size = len(keystring_tokens)
+            i = 0
+            max_score = 0
+            while i + window_size <= len(response_tokens):
+                response_substring = " ".join(response_tokens[i:i + window_size])
+                score1 = sentence_similarity_mean_w2v(response_substring, keystring)
+                score2, _, _ = sentence_similarity(response_substring, keystring)
+                max_score = max(score1, score2, max_score)
+                i += 1
+            keystring_scores.append((keystring, max_score))
+
+            threshold = 0.75
+            if exact_match is True:
+                threshold = 0.99
+
+            if should_contain is True and max_score < threshold and problematic_keystring is None:
+                problematic_keystring = keystring
+                feedback = f"Cannot determine if the answer is correct. Please provide more information about '{problematic_keystring}'"
+
+            if should_contain is False and max_score > threshold and problematic_keystring is None:
+                problematic_keystring = keystring
+                feedback = f"Cannot determine if the answer is correct. Identified '{problematic_keystring}' in the answer, which was not expected."
+
+            if custom_feedback is not None:
+                feedback = f"Cannot determine if the answer is correct. {custom_feedback}"
+
+        if problematic_keystring is not None:
+            return {
+                "is_correct": False,
+                "result": {
+                    "response": response,
+                    "processing_time": time.process_time() - start_time,
+                    "keystring-scores": keystring_scores
+                },
+                "feedback": feedback
+            }
 
     w2v_similarity = sentence_similarity_mean_w2v(response, answer)
-
-    # if params is not None and "keywords" in params:
-    #     keywords = params["keywords"]
-    #     for keyword in keywords:
-    #         for resp_score in response_scores:
-    #             if resp_score[1] == keyword:
-    #                 continue
-    #         return {
-    #             "is_correct": False,
-    #             "result": {
-    #                 "similarity_value": similarity,
-    #                 "Problematic_word": keyword
-    #             },
-    #             "feedback": f"Cannot determine if the answer is correct. Please provide more details about '{keyword}"
-    #         }
-
-    # params of the form {'keyphrase': ['phrase1', 'phrase2', ...]}
-    if params is not None and "keyphrases" in params:
-        keyphrases = params["keyphrases"]
-        for keyphrase in keyphrases:
-            response_tokens = preprocess_tokens(response)
-            keyphrase_tokens = preprocess_tokens(keyphrase)
-            window_size = len(keyphrase_tokens)
-            i = 0
-            found = False
-            while i + window_size <= len(response_tokens):
-                response_substring = " ".join(response_tokens[i:i+window_size])
-                score = sentence_similarity_mean_w2v(response_substring, keyphrase)
-                i += 1
-                if score > 0.75:
-                    found = True
-                    continue
-            if not found:
-                return {
-                    "is_correct": False,
-                    "result": {
-                        "similarity_value": w2v_similarity,
-                        "Problematic_word": keyphrase
-                    },
-                    "feedback": f"Cannot determine if the answer is correct. Could not identify '{keyphrase}"
-                }
 
     if w2v_similarity > 0.75:
         return {
             "is_correct": True,
             "result": {
+                "response": response,
+                "processing_time": time.process_time() - start_time,
+                "method": "w2v",
                 "similarity_value": w2v_similarity
             },
-            "feedback": "Correct!"
+            "feedback": f"Confidence: {w2v_similarity}%"
         }
 
     else:
@@ -96,10 +114,14 @@ def evaluation_function(response, answer, params):
         return {
             "is_correct": False,
             "result": {
+                "response": response,
+                "processing_time": time.process_time() - start_time,
+                "method": "BOW vector similarity",
                 "similarity_value": w2v_similarity,
-                "Problematic_word": word
+                "BOW_similarity_value": similarity,
+                "problematic_word": word
             },
-            "feedback": f"Cannot determine if the answer is correct. Please provide more details about '{word}"
+            "feedback": f"Cannot determine if the answer is correct ({w2v_similarity}% similarity). {f'Please provide more information about {word}' if word is not None else ''}"
         }
 
 
@@ -147,7 +169,9 @@ def sentence_similarity(response: str, answer: str):
                     best_similarity = similarity
                     best_word = other_word
             scores.append(
-                (best_similarity * word_information_content(word, blen, freqs) * word_information_content(best_word, blen, freqs), word))
+                (best_similarity * word_information_content(word, blen, freqs) * word_information_content(best_word,
+                                                                                                          blen, freqs),
+                 word))
         return scores
 
     response_scores = sencence_scores(all_words, response_words)
@@ -168,6 +192,7 @@ def preprocess_tokens(text: str):
     tokens = [word for word in word_tokenize(text) if word not in to_remove]
     return tokens
 
+
 def sentence_similarity_mean_w2v(response: str, answer: str):
     with open('w2v', 'rb') as fp:
         w2v = pickle.load(fp)
@@ -179,12 +204,18 @@ def sentence_similarity_mean_w2v(response: str, answer: str):
         return 0
     response_vector = np.mean(response_embeddings, axis=0)
     answer_vector = np.mean(answer_embeddings, axis=0)
-    return float(np.dot(response_vector, answer_vector) / (np.linalg.norm(response_vector) * np.linalg.norm(answer_vector)))
+    return float(
+        np.dot(response_vector, answer_vector) / (np.linalg.norm(response_vector) * np.linalg.norm(answer_vector)))
     # TODO
+
 
 if __name__ == "__main__":
     pass
-    # print(time.process_time())
-    # print(evaluation_function("density, velocity,Visc", "Density, Velocity, Viscosity, Length", {'keyphrases': ['Density', 'Velocity', 'Viscosity', 'Length']}))
-    # print(evaluation_function("test", "test", None))
-    # print(time.process_time())
+    print(evaluation_function("Density, speed, Viscosity, Length", "Density, Velocity, Viscosity, Length", {'keystrings': [{"string": "density"}, {"string": "velocity", "exact_match": False, 'should_contain': False}, {"string": "viscosity"}, {"string": "length"}]}))
+
+# File sizes / Location / Permissions
+# Clear everything including nltk. Test with small files.
+#
+# Confidence score for evaluations of answers, grouped by 'correct'/'incorrect' answers
+#
+
