@@ -99,7 +99,7 @@ def evaluation_function(response, answer, params):
                 "method": "w2v",
                 "similarity_value": w2v_similarity
             },
-            "feedback": f"Confidence: {w2v_similarity}%"
+            "feedback": f"Confidence: {'%.3f'%(w2v_similarity)}%"
         }
 
     else:
@@ -121,7 +121,7 @@ def evaluation_function(response, answer, params):
                 "BOW_similarity_value": similarity,
                 "problematic_word": word
             },
-            "feedback": f"Cannot determine if the answer is correct ({w2v_similarity}% similarity). {f'Please provide more information about {word}' if word is not None else ''}"
+            "feedback": f"Cannot determine if the answer is correct ({'%.3f'%(w2v_similarity)}% similarity). {f'Please provide more information about {word}' if word is not None else ''}"
         }
 
 
@@ -212,6 +212,7 @@ def sentence_similarity_mean_w2v(response: str, answer: str):
 if __name__ == "__main__":
     pass
     print(evaluation_function("Density, speed, Viscosity, Length", "Density, Velocity, Viscosity, Length", {'keystrings': [{"string": "density"}, {"string": "velocity", "exact_match": False, 'should_contain': False}, {"string": "viscosity"}, {"string": "length"}]}))
+    print(evaluation_function("Molecules are made out of atoms", "Many atoms form a molecule", {'keystrings': [{'string': 'molecule'}, {'string': 'proton', 'exact_match': True}]}))
 
 # File sizes / Location / Permissions
 # Clear everything including nltk. Test with small files.
