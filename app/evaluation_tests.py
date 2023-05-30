@@ -72,6 +72,42 @@ class TestEvaluationFunction(unittest.TestCase):
 
             self.assertEqual(result.get("is_correct"), False, msg=f'Response: {response}')
 
+    def test_reynolds_number_exact_match(self):
+        answer, params = 'Density, Velocity, Viscosity, Length', {
+            'keystrings': [{'string': 'velocity', 'exact_match': True}]}
+        incorrect_responses = [
+            'density,speed,viscosity, length',
+        ]
+
+        for response in incorrect_responses:
+            result = evaluation_function(response, answer, params)
+
+            self.assertEqual(result.get("is_correct"), False, msg=f'Response: {response}')
+
+    def test_reynolds_number_should_not_contain(self):
+        answer, params = 'Density, Velocity, Viscosity, Length', {
+            'keystrings': [{'string': 'direction', 'should_contain': False}]}
+        incorrect_responses = [
+            'density,speed,viscosity, length, direction',
+        ]
+
+        for response in incorrect_responses:
+            result = evaluation_function(response, answer, params)
+
+            self.assertEqual(result.get("is_correct"), False, msg=f'Response: {response}')
+
+    def test_reynolds_number_custom_feedback(self):
+        answer, params = 'Density, Velocity, Viscosity, Length', {
+            'keystrings': [{'string': 'banana', 'custom_feedback': 'custom feedback with the word banana'}]}
+        incorrect_responses = [
+            'An incorrect response',
+        ]
+
+        for response in incorrect_responses:
+            result = evaluation_function(response, answer, params)
+
+            self.assertIn('banana', result.get("feedback"), msg=f'Response: {response}')
+
     navier_stokes_answer = "The density of the film is uniform and constant, therefore the flow is incompressible. " \
                            "Since we have incompressible flow, uniform viscosity, Newtonian fluid, " \
                            "the most appropriate set of equations for the solution of the problem is the " \
