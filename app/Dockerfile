@@ -16,6 +16,7 @@ COPY word_freqs .
 COPY w2v .
 RUN pip3 install -r requirements.txt
 RUN python -m nltk.downloader wordnet
+RUN python -m nltk.downloader word2vec_sample
 RUN python -m nltk.downloader brown
 RUN python -m nltk.downloader stopwords
 RUN python -m nltk.downloader punkt

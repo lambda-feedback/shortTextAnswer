@@ -8,7 +8,10 @@ import numpy as np
 import numpy.linalg
 from nltk.corpus import stopwords
 from nltk import word_tokenize
+from nltk.data import find
 
+word2vec_sample = str(find('models/word2vec_sample/pruned.word2vec.txt'))
+w2v = gensim.models.KeyedVectors.load_word2vec_format(word2vec_sample, binary=False)
 
 def evaluation_function(response, answer, params):
     """
@@ -155,8 +158,6 @@ def sentence_similarity(response: str, answer: str):
         blen = pickle.load(fp)
     with open('word_freqs', 'rb') as fp:
         freqs = pickle.load(fp)
-    with open('w2v', 'rb') as fp:
-        w2v = pickle.load(fp)
 
     def sencence_scores(common_words, sentence):
         scores = []
@@ -194,8 +195,6 @@ def preprocess_tokens(text: str):
 
 
 def sentence_similarity_mean_w2v(response: str, answer: str):
-    with open('w2v', 'rb') as fp:
-        w2v = pickle.load(fp)
     response = preprocess_tokens(response)
     answer = preprocess_tokens(answer)
     response_embeddings = [w2v[word] for word in response if w2v.has_index_for(word)]
@@ -206,7 +205,6 @@ def sentence_similarity_mean_w2v(response: str, answer: str):
     answer_vector = np.mean(answer_embeddings, axis=0)
     return float(
         np.dot(response_vector, answer_vector) / (np.linalg.norm(response_vector) * np.linalg.norm(answer_vector)))
-    # TODO
 
 
 if __name__ == "__main__":
