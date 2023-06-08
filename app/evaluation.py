@@ -9,9 +9,11 @@ import numpy.linalg
 from nltk.corpus import stopwords
 from nltk import word_tokenize
 from nltk.data import find
+from sentence_transformers import SentenceTransformer
 
 word2vec_sample = str(find('models/word2vec_sample/pruned.word2vec.txt'))
 w2v = gensim.models.KeyedVectors.load_word2vec_format(word2vec_sample, binary=False)
+sentence_transformer = SentenceTransformer('all-MiniLM-L6-v2')
 
 def evaluation_function(response, answer, params):
     """
@@ -39,7 +41,7 @@ def evaluation_function(response, answer, params):
     start_time = time.process_time()
 
     # params of the form {'keystrings': ['keystring1', 'keystring2', ...]}
-    # keystring of the form {'string':..., 'exact_match:False', 'should_contain:True', 'custom_feedback:None}
+    # keystring of the form {'string':..., 'exact_match:False', 'should_contain:True', 'custom_feedback:None, 'mode:string'}
     if params is not None and "keystrings" in params:
         keystrings = params["keystrings"]
         problematic_keystring = None
@@ -51,6 +53,8 @@ def evaluation_function(response, answer, params):
             exact_match = keystring_object['exact_match'] if 'exact_match' in keystring_object else False
             should_contain = keystring_object['should_contain'] if 'should_contain' in keystring_object else True
             custom_feedback = keystring_object['custom_feedback'] if 'custom_feedback' in keystring_object else None
+            mode = keystring_object['mode'] if 'mode' in keystring_object else 'auto'
+            similarity_function = get_similarity_function_by_mode(mode)
             keystring_tokens = preprocess_tokens(keystring)
 
             # Sliding window matching
@@ -59,9 +63,7 @@ def evaluation_function(response, answer, params):
             max_score = 0
             while i + window_size <= len(response_tokens):
                 response_substring = " ".join(response_tokens[i:i + window_size])
-                score1 = sentence_similarity_mean_w2v(response_substring, keystring)
-                score2, _, _ = sentence_similarity(response_substring, keystring)
-                max_score = max(score1, score2, max_score)
+                max_score = max(max_score, sentence_similarity_mean_w2v(response_substring, keystring))
                 i += 1
             keystring_scores.append((keystring, max_score))
 
@@ -91,7 +93,11 @@ def evaluation_function(response, answer, params):
                 "feedback": feedback
             }
 
-    w2v_similarity = sentence_similarity_mean_w2v(response, answer)
+    mode = 'w2v'
+    if len(preprocess_tokens(response)) >= 10:
+        mode = 'transformer'
+    similarity_function = get_similarity_function_by_mode(mode)
+    w2v_similarity = similarity_function(response, answer)
 
     if w2v_similarity > 0.75:
         return {
@@ -205,6 +211,21 @@ def sentence_similarity_mean_w2v(response: str, answer: str):
     answer_vector = np.mean(answer_embeddings, axis=0)
     return float(
         np.dot(response_vector, answer_vector) / (np.linalg.norm(response_vector) * np.linalg.norm(answer_vector)))
+
+def sentence_similarity_transformer(response: str, answer: str):
+    pass
+    embeddings = sentence_transformer.encode([response, answer])
+    return float(np.dot(embeddings[0],embeddings[1]) / (np.linalg.norm(embeddings[0]) * np.linalg.norm(embeddings[1])))
+
+def get_similarity_function_by_mode(mode: str):
+    if mode == 'bow':
+        return lambda str1, str2 : sentence_similarity(str1, str2)[0]
+    elif mode == 'w2v':
+        return sentence_similarity_mean_w2v
+    elif mode == 'transofrmer':
+        return sentence_similarity_transformer
+    else: # mode == 'auto'
+        return sentence_similarity_mean_w2v
 
 
 if __name__ == "__main__":

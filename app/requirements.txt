@@ -2,3 +2,4 @@ numpy
 nltk
 gensim
 matplotlib
+sentence-transformers
