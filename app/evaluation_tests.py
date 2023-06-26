@@ -47,7 +47,7 @@ class TestEvaluationFunction(unittest.TestCase):
         for response in correct_responses:
             result = evaluation_function(response, answer, params)
 
-            self.assertEqual(result.get("is_correct"), True, msg=f'Response: {response}')
+            self.assertEqual(result.get("is_correct"), True, msg=f'Result: {result}')
 
     def test_reynolds_number_is_incorrect(self):
         answer, params = 'Density, Velocity, Viscosity, Length', dict()
@@ -59,7 +59,7 @@ class TestEvaluationFunction(unittest.TestCase):
         for response in incorrect_responses:
             result = evaluation_function(response, answer, params)
 
-            self.assertEqual(result.get("is_correct"), False, msg=f'Response: {response}')
+            self.assertEqual(result.get("is_correct"), False, msg=f'Result: {result}')
 
     def test_reynolds_number_is_incorrect_with_keystring(self):
         answer, params = 'Density, Velocity, Viscosity, Length', {'keystrings': [{'string': 'density'}, {'string': 'velocity'}, {'string': 'viscosity'}, {'string': 'length'}]}
@@ -70,7 +70,7 @@ class TestEvaluationFunction(unittest.TestCase):
         for response in incorrect_responses:
             result = evaluation_function(response, answer, params)
 
-            self.assertEqual(result.get("is_correct"), False, msg=f'Response: {response}')
+            self.assertEqual(result.get("is_correct"), False, msg=f'Result: {result}')
 
     def test_reynolds_number_exact_match(self):
         answer, params = 'Density, Velocity, Viscosity, Length', {
@@ -82,7 +82,7 @@ class TestEvaluationFunction(unittest.TestCase):
         for response in incorrect_responses:
             result = evaluation_function(response, answer, params)
 
-            self.assertEqual(result.get("is_correct"), False, msg=f'Response: {response}')
+            self.assertEqual(result.get("is_correct"), False, msg=f'Result: {result}')
 
     def test_reynolds_number_should_not_contain(self):
         answer, params = 'Density, Velocity, Viscosity, Length', {
@@ -94,7 +94,7 @@ class TestEvaluationFunction(unittest.TestCase):
         for response in incorrect_responses:
             result = evaluation_function(response, answer, params)
 
-            self.assertEqual(result.get("is_correct"), False, msg=f'Response: {response}')
+            self.assertEqual(result.get("is_correct"), False, msg=f'Result: {result}')
 
     def test_reynolds_number_custom_feedback(self):
         answer, params = 'Density, Velocity, Viscosity, Length', {
@@ -106,7 +106,7 @@ class TestEvaluationFunction(unittest.TestCase):
         for response in incorrect_responses:
             result = evaluation_function(response, answer, params)
 
-            self.assertIn('banana', result.get("feedback"), msg=f'Response: {response}')
+            self.assertIn('banana', result.get("feedback"), msg=f'Result: {result}')
 
     navier_stokes_answer = "The density of the film is uniform and constant, therefore the flow is incompressible. " \
                            "Since we have incompressible flow, uniform viscosity, Newtonian fluid, " \
@@ -119,7 +119,7 @@ class TestEvaluationFunction(unittest.TestCase):
                                                                     {'string': 'uniform viscosity'}, {'string': 'Newtonian fluid'}]}
 
     def test_navier_stokes_equation(self):
-        answer, params = self.navier_stokes_answer, dict()
+        answer, params = self.navier_stokes_answer, {"mode": "bow"}
         correct_responses = [
             #'Navier-stokes. Continuum, const and uniform density and viscosity so incompressible, newtonian. Fits all '
             #'requirements for navier stokes',
@@ -131,7 +131,7 @@ class TestEvaluationFunction(unittest.TestCase):
 
         for response in correct_responses:
             result = evaluation_function(response, answer, params)
-            self.assertEqual(result.get("is_correct"), True, msg=f'Response: {response}')
+            self.assertEqual(result.get("is_correct"), True, msg=f'Result: {result}')
 
 if __name__ == "__main__":
     unittest.main()

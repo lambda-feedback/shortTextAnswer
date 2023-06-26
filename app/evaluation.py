@@ -4,16 +4,21 @@ import time
 
 import gensim
 import matplotlib.pyplot as plt
+import nltk
 import numpy as np
 import numpy.linalg
 from nltk.corpus import stopwords
 from nltk import word_tokenize
 from nltk.data import find
 from sentence_transformers import SentenceTransformer
+import gensim.downloader as api
 
 word2vec_sample = str(find('models/word2vec_sample/pruned.word2vec.txt'))
 w2v = gensim.models.KeyedVectors.load_word2vec_format(word2vec_sample, binary=False)
+#w2v = api.load("glove-twitter-25")
 sentence_transformer = SentenceTransformer('all-MiniLM-L6-v2')
+print(len(w2v))
+print(len(w2v["banana"]))
 
 def evaluation_function(response, answer, params):
     """
@@ -38,7 +43,7 @@ def evaluation_function(response, answer, params):
     return types and that evaluation_function() is the main function used 
     to output the evaluation response.
     """
-    start_time = time.process_time()
+    start_time = time.time()
 
     # params of the form {'keystrings': ['keystring1', 'keystring2', ...]}
     # keystring of the form {'string':..., 'exact_match:False', 'should_contain:True', 'custom_feedback:None, 'mode:string'}
@@ -63,7 +68,7 @@ def evaluation_function(response, answer, params):
             max_score = 0
             while i + window_size <= len(response_tokens):
                 response_substring = " ".join(response_tokens[i:i + window_size])
-                max_score = max(max_score, sentence_similarity_mean_w2v(response_substring, keystring))
+                max_score = max(max_score, similarity_function(response_substring, keystring))
                 i += 1
             keystring_scores.append((keystring, max_score))
 
@@ -87,7 +92,7 @@ def evaluation_function(response, answer, params):
                 "is_correct": False,
                 "result": {
                     "response": response,
-                    "processing_time": time.process_time() - start_time,
+                    "processing_time": time.time() - start_time,
                     "keystring-scores": keystring_scores
                 },
                 "feedback": feedback
@@ -96,6 +101,9 @@ def evaluation_function(response, answer, params):
     mode = 'w2v'
     if len(preprocess_tokens(response)) >= 10:
         mode = 'transformer'
+
+    if params is not None and "mode" in params:
+        mode = params["mode"]
     similarity_function = get_similarity_function_by_mode(mode)
     w2v_similarity = similarity_function(response, answer)
 
@@ -104,7 +112,7 @@ def evaluation_function(response, answer, params):
             "is_correct": True,
             "result": {
                 "response": response,
-                "processing_time": time.process_time() - start_time,
+                "processing_time": time.time() - start_time,
                 "method": "w2v",
                 "similarity_value": w2v_similarity
             },
@@ -116,15 +124,15 @@ def evaluation_function(response, answer, params):
         dif = 0
         word = None
         for (resp_score, ans_score) in zip(response_scores, answer_scores):
-            if ans_score[0] - resp_score[0] > dif:
-                dif = ans_score[0] - resp_score[0]
+            if resp_score[0] - ans_score[0] > dif:
+                dif = resp_score[0] - ans_score[0]
                 word = resp_score[1]
 
         return {
             "is_correct": False,
             "result": {
                 "response": response,
-                "processing_time": time.process_time() - start_time,
+                "processing_time": time.time() - start_time,
                 "method": "BOW vector similarity",
                 "similarity_value": w2v_similarity,
                 "BOW_similarity_value": similarity,
@@ -222,7 +230,7 @@ def get_similarity_function_by_mode(mode: str):
         return lambda str1, str2 : sentence_similarity(str1, str2)[0]
     elif mode == 'w2v':
         return sentence_similarity_mean_w2v
-    elif mode == 'transofrmer':
+    elif mode == 'transformer':
         return sentence_similarity_transformer
     else: # mode == 'auto'
         return sentence_similarity_mean_w2v
@@ -230,8 +238,10 @@ def get_similarity_function_by_mode(mode: str):
 
 if __name__ == "__main__":
     pass
-    print(evaluation_function("Density, speed, Viscosity, Length", "Density, Velocity, Viscosity, Length", {'keystrings': [{"string": "density"}, {"string": "velocity", "exact_match": False, 'should_contain': False}, {"string": "viscosity"}, {"string": "length"}]}))
-    print(evaluation_function("Molecules are made out of atoms", "Many atoms form a molecule", {'keystrings': [{'string': 'molecule'}, {'string': 'proton', 'exact_match': True}]}))
+    print(evaluation_function("flow", "fluid", {"mode": "bow"}))
+    #print(evaluation_function("Density, speed, Viscosity, Length", "Density, Velocity, Viscosity, Length", {'keystrings': [{"string": "density"}, {"string": "velocity", "exact_match": False, 'should_contain': False}, {"string": "viscosity"}, {"string": "length"}]}))
+    #print(evaluation_function("Molecules are made out of atoms", "Many atoms form a molecule", {'keystrings': [{'string': 'molecule'}, {'string': 'proton', 'exact_match': True}]}))
+    #print(evaluation_function("solid, liquid", 'solid, liquid, gas', params={"mode": "bow", "keystrings":[{"string":"solid"}, {"string":"liquid"}, {"string":"gas", "custom_feedback":"What is water's aggregation state when above 100 degrees?"}]}))
 
 # File sizes / Location / Permissions
 # Clear everything including nltk. Test with small files.
