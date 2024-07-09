@@ -3,9 +3,7 @@ import string
 import time
 
 import gensim
-import matplotlib.pyplot as plt
 import numpy as np
-import numpy.linalg
 from nltk.corpus import stopwords
 from nltk import word_tokenize
 from nltk.data import find
@@ -114,6 +112,12 @@ def evaluation_function(response, answer, params):
                 dif = ans_score[0] - resp_score[0]
                 word = resp_score[1]
 
+        both_one_word = len(response.split(' ')) == 1 and len(answer.split(' ')) == 1
+        more_info_msg = f'Please provide more information about {word}' if word is not None else ''
+        feedback_msg = (
+            "Incorrect" if both_one_word
+            else f"Cannot determine if the answer is correct ({'%.3f'%(w2v_similarity)}% similarity). {more_info_msg}" )
+
         return {
             "is_correct": False,
             "result": {
@@ -124,7 +128,7 @@ def evaluation_function(response, answer, params):
                 "BOW_similarity_value": similarity,
                 "problematic_word": word
             },
-            "feedback": f"Cannot determine if the answer is correct ({'%.3f'%(w2v_similarity)}% similarity). {f'Please provide more information about {word}' if word is not None else ''}"
+            "feedback": feedback_msg,
         }
 
 
