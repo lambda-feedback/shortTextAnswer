@@ -4,10 +4,9 @@ class EvaluationResponse:
         self.latex = None
         self._feedback = []  # A list that will hold all feedback items
         self._feedback_tags = {}  # A dictionary that holds a list with indices to all feedback items with the same tag
-        # self._criteria_graphs = {}
-        # self.latex = ""
-        # self.simplified = ""
+        self._metadata = {}
         self._processing_time = 0
+        self._evaluation_type = None
 
     def get_feedback(self, tag):
         return self._feedback_tags.get(tag, None)
@@ -20,6 +19,9 @@ class EvaluationResponse:
     
     def get_is_correct(self):
         return self.is_correct
+    
+    def get_evaluation_type(self):
+        return self._evaluation_type
 
     def add_feedback(self, feedback_item):
         # Adds a feedback item to the feedback list and tags it.
@@ -40,11 +42,14 @@ class EvaluationResponse:
                 if feedback_string is not None:
                     self.add_feedback((tag, feedback_string))
 
-    # def add_criteria_graph(self, name, graph):
-    #     self._criteria_graphs.update({name: graph.json()})
+    def add_metadata(self, name, data):
+        self._metadata.update({name: data})
     
     def add_processing_time(self, time):
         self._processing_time = time
+
+    def add_evaluation_type(self, evaluation_type):
+        self._evaluation_type = evaluation_type
 
     def _serialise_feedback(self) -> str:
         feedback = []
@@ -58,12 +63,12 @@ class EvaluationResponse:
     def serialise(self, include_test_data=False) -> dict:
         out = dict(is_correct=self.is_correct, feedback=self._serialise_feedback())
         out.update(dict(tags=list(self._feedback_tags.keys())))
-        # if include_test_data is True:
-        #     out.update(dict(criteria_graphs=self._criteria_graphs))
-        # if self.latex is not None:
-        #     out.update(dict(response_latex=self.latex))
-        # if self.simplified is not None:
-        #     out.update(dict(response_simplified=self.simplified))
+        if len(self._metadata) > 0:
+            out.update(dict(metadata=self._metadata))
+        if self._processing_time >= 0:
+            out.update(dict(processing_time=self._processing_time))
+        if self._evaluation_type is not None:
+            out.update(dict(evaluation_type=self._evaluation_type))
         return out
 
     def __getitem__(self, key):

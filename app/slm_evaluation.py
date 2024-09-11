@@ -40,8 +40,9 @@ def evaluation_function(response: Any, answer: Any, params: Any) -> EvaluationRe
 
     eval_response = EvaluationResponse() 
     eval_response.is_correct = False
+    eval_response.add_evaluation_type("slm")
     evaluation_instruction = instruction.format(response=response, answer=answer)
-
+    
     # TODO: introduce the parameters for exact_match or inclusion of a given word to distinguish between instruction prompts for the model
     if params is not None and "keystrings" in params:
         keystrings = params["keystrings"]

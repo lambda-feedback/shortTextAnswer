@@ -5,6 +5,16 @@ try:
 except ImportError:
     from evaluation import evaluation_function
 
+try:
+    from .nlp_evaluation_tests import TestEvaluationFunction as NLPTestEvaluationFunction
+except ImportError:
+    from nlp_evaluation_tests import TestEvaluationFunction as NLPTestEvaluationFunction
+
+try:
+    from .slm_evaluation_tests import TestEvaluationFunction as SLMTestEvaluationFunction
+except ImportError:
+    from slm_evaluation_tests import TestEvaluationFunction as SLMTestEvaluationFunction
+
 class TestEvaluationFunction(unittest.TestCase):
     """
         TestCase Class used to test the algorithm.
@@ -23,128 +33,34 @@ class TestEvaluationFunction(unittest.TestCase):
         Use evaluation_function() to check your algorithm works 
         as it should.
     """
-    def test_returns_is_correct_true(self):
-        response, answer, params = "A xor gate takes 2 inputs", "There are 2 inputs in a xor gate", dict()
+
+    def test_combined_evaluation_nlp(self):
+        response, answer, params = "light blue", "not light blue", dict(evaluation_type="nlp")
+        result = evaluation_function(response, answer, params)
+
+        self.assertEqual(result.get_is_correct(), False, msg=f'{result.serialise()}, Answer: {answer}')
+
+    def test_combined_evaluation_slm(self):
+        response, answer, params = "light blue", "not light blue", dict(evaluation_type="slm")
         result = evaluation_function(response, answer, params)
         
-        self.assertEqual(result.get("is_correct"), True)
+        print(result.serialise())
+        self.assertEqual(result.get_is_correct(), False, msg=f'{result.serialise()}, Answer: {answer}')
 
-    def test_reynolds_number_is_correct(self):
-        answer, params = 'Density, Velocity, Viscosity, Length', dict()
-        correct_responses = [
-            'density,velocity,viscosity,length',
-            'Density,Velocity,Viscosity,Length',
-            'density,characteristic velocity,viscosity,characteristic length',
-            'Density,Velocity,Shear viscosity,Length',
-            'density,velocity,viscosity,lengthscale',
-            'density,velocity,shear viscosity,length',
-            'density,characteristic velocity,shear viscosity,characteristic lengthscale',
-            'density,velocity,shear viscosity,characteristic lengthscale',
-            'density,velocity,viscosity,length scale',
-            'pressure,characteristic velocity of flow,shear viscosity,characteristic length scale',
-        ]
+def load_tests(loader, tests, pattern):
+    """
+    Used to filter out which tests to run, if commented out then all unittests in the project will run.
+    To run unittests:
+        `python -m unittest app.evaluation_tests`
+    """
+    suite = unittest.TestSuite()
+    
+    # Add tests from submodules of unittest
+    # suite.addTests(loader.loadTestsFromTestCase(NLPTestEvaluationFunction))
+    # suite.addTests(loader.loadTestsFromTestCase(SLMTestEvaluationFunction))
+    suite.addTests(loader.loadTestsFromTestCase(TestEvaluationFunction))
+    
+    return suite
 
-        for response in correct_responses:
-            result = evaluation_function(response, answer, params)
-
-            self.assertEqual(result.get("is_correct"), True, msg=f'Response: {response}')
-
-    def test_reynolds_number_is_incorrect(self):
-        answer, params = 'Density, Velocity, Viscosity, Length', dict()
-        incorrect_responses = [
-            'density,,,',
-            'rho,u,mu,L',
-        ]
-
-        for response in incorrect_responses:
-            result = evaluation_function(response, answer, params)
-
-            self.assertEqual(result.get("is_correct"), False, msg=f'Response: {response}')
-
-    def test_reynolds_number_is_incorrect_with_keystring(self):
-        answer, params = 'Density, Velocity, Viscosity, Length', {'keystrings': [{'string': 'density'}, {'string': 'velocity'}, {'string': 'viscosity'}, {'string': 'length'}]}
-        incorrect_responses = [
-            'density,velocity,visc,',
-        ]
-
-        for response in incorrect_responses:
-            result = evaluation_function(response, answer, params)
-
-            self.assertEqual(result.get("is_correct"), False, msg=f'Response: {response}')
-
-    def test_reynolds_number_exact_match(self):
-        answer, params = 'Density, Velocity, Viscosity, Length', {
-            'keystrings': [{'string': 'velocity', 'exact_match': True}]}
-        incorrect_responses = [
-            'density,speed,viscosity, length',
-        ]
-
-        for response in incorrect_responses:
-            result = evaluation_function(response, answer, params)
-
-            self.assertEqual(result.get("is_correct"), False, msg=f'Response: {response}')
-
-    def test_reynolds_number_should_not_contain(self):
-        answer, params = 'Density, Velocity, Viscosity, Length', {
-            'keystrings': [{'string': 'direction', 'should_contain': False}]}
-        incorrect_responses = [
-            'density,speed,viscosity, length, direction',
-        ]
-
-        for response in incorrect_responses:
-            result = evaluation_function(response, answer, params)
-
-            self.assertEqual(result.get("is_correct"), False, msg=f'Response: {response}')
-
-    def test_reynolds_number_custom_feedback(self):
-        answer, params = 'Density, Velocity, Viscosity, Length', {
-            'keystrings': [{'string': 'banana', 'custom_feedback': 'custom feedback with the word banana'}]}
-        incorrect_responses = [
-            'An incorrect response',
-        ]
-
-        for response in incorrect_responses:
-            result = evaluation_function(response, answer, params)
-
-            self.assertIn('banana', result.get("feedback"), msg=f'Response: {response}')
-
-    navier_stokes_answer = "The density of the film is uniform and constant, therefore the flow is incompressible. " \
-                           "Since we have incompressible flow, uniform viscosity, Newtonian fluid, " \
-                           "the most appropriate set of equations for the solution of the problem is the " \
-                           "Navier-Stokes equations. The Navier-Stokes equations in Cartesian coordinates are used: " \
-                           "mass conservation and components of the momentum balance"
-
-    navier_stokes_params = {'keystrings': [{'string': 'Navier-Stokes equations'}, {'string': 'mass conservation'},
-                                                                    {'string': 'momentum balance'}, {'string': 'incompressible flow'},
-                                                                    {'string': 'uniform viscosity'}, {'string': 'Newtonian fluid'}]}
-
-    def test_navier_stokes_equation(self):
-        answer, params = self.navier_stokes_answer, dict()
-        correct_responses = [
-            #'Navier-stokes. Continuum, const and uniform density and viscosity so incompressible, newtonian. Fits all '
-            #'requirements for navier stokes',
-            'Navier-Stokes in a Cartesian reference coordinates would be chosen for this particular flow. This is due '
-            'to the reason that the flow is Newtonian, the viscosity is uniform and constant. Additionally, '
-            'the density is uniform and constant; implying that it is an incompressible flow. This flow obeys the '
-            'main assumptions in order to employ the Navier Stokes equations.',
-        ]
-
-        for response in correct_responses:
-            result = evaluation_function(response, answer, params)
-            self.assertEqual(result.get("is_correct"), True, msg=f'Response: {response}')
-
-    def test_negation(self):
-        answer, params = 'light blue', dict()
-        correct_responses = [
-            'bright blue',
-            'light blue',
-            'not light blue', # WARNING: THIS test should be False, but the similarity algorithm cannot handle negations
-            'dark blue'       # WARNING: THIS test should be False, but the similarity algorithm cannot handle context understanding
-        ]
-
-        for response in correct_responses:
-            result = evaluation_function(response, answer, params)
-            self.assertEqual(result.get("is_correct"), True, msg=f'Response: {response}')
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     unittest.main()
