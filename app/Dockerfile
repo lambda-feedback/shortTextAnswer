@@ -15,7 +15,6 @@ COPY requirements.txt .
 COPY brown_length .
 COPY word_freqs .
 COPY w2v .
-RUN cat /etc/os-release
 RUN yum install -y wget unzip
 RUN pip3 install -r requirements.txt
 
@@ -27,7 +26,7 @@ RUN wget -O /usr/share/nltk_data/corpora/stopwords.zip https://raw.githubusercon
 RUN wget -O /usr/share/nltk_data/tokenizers/punkt.zip https://raw.githubusercontent.com/nltk/nltk_data/gh-pages/packages/tokenizers/punkt.zip
 RUN wget -O /usr/share/nltk_data/tokenizers/punkt_tab.zip https://raw.githubusercontent.com/nltk/nltk_data/gh-pages/packages/tokenizers/punkt_tab.zip
 
-# Unzip the downloaded files into the correct subfolders
+# Unzip the downloaded files into the correct subfolders corresponsing to NLTK requirements
 RUN unzip /usr/share/nltk_data/corpora/wordnet.zip -d /usr/share/nltk_data/corpora/
 RUN unzip /usr/share/nltk_data/models/word2vec_sample.zip -d /usr/share/nltk_data/models/
 RUN unzip /usr/share/nltk_data/corpora/brown.zip -d /usr/share/nltk_data/corpora/
