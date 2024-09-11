@@ -6,12 +6,21 @@ try:
 except ImportError:
     from evaluation_response_utilities import EvaluationResponse
 
+try:
+    from .slm_instructions import build_instruction
+except ImportError:
+    from slm_instructions import build_instruction
+
+try:
+    from .nlp_evaluation import evaluation_function as nlp_evaluation_function
+except ImportError:
+    from nlp_evaluation import evaluation_function as nlp_evaluation_function
 
 class Params(TypedDict):
     pass
 
 model = GPT4All(model_name="Phi-3.5-mini-instruct-Q6_K.gguf",model_path="app/models/", allow_download=False) # downloads / loads the model
-instruction = "Compare the following two sections: Response='{response}' & Answer='{answer}'. Write 'True' if the response perfectly matches the answer, 'False' otherwise. Do not provide any explanation."
+# instruction = "Compare the following two sections: Response='{response}' & Answer='{answer}'. Write 'True' if the response perfectly matches the answer, 'False' otherwise. Do not provide any explanation."
 
 def evaluation_function(response: Any, answer: Any, params: Any) -> EvaluationResponse:
     """
@@ -41,18 +50,40 @@ def evaluation_function(response: Any, answer: Any, params: Any) -> EvaluationRe
     eval_response = EvaluationResponse() 
     eval_response.is_correct = False
     eval_response.add_evaluation_type("slm")
-    evaluation_instruction = instruction.format(response=response, answer=answer)
+    evaluation_instruction = ""
     
-    # TODO: introduce the parameters for exact_match or inclusion of a given word to distinguish between instruction prompts for the model
+    # TODO(in progress): introduce the parameters for exact_match or inclusion of a given word to distinguish between instruction prompts for the model
+    #  such checks should be done by an algorithm and not by the model, or point to --- NLP evaluation function ---
     if params is not None and "keystrings" in params:
         keystrings = params["keystrings"]
-        problematic_keystring = None
+        # problematic_keystring = None
         for keystring_object in keystrings:
-            # Unpack keystring object
-            keystring = keystring_object['string']
-            exact_match = keystring_object['exact_match'] if 'exact_match' in keystring_object else False
-            should_contain = keystring_object['should_contain'] if 'should_contain' in keystring_object else True
-            custom_feedback = keystring_object['custom_feedback'] if 'custom_feedback' in keystring_object else None
+
+            # if either exact_match , should_contain or custom_feedback is in the keystring object
+            # then --- NLP evaluation function --- is called
+            if 'exact_match' in keystring_object or 'should_contain' in keystring_object or 'custom_feedback' in keystring_object:
+                return nlp_evaluation_function(response, answer, params)
+            else:
+                evaluation_instruction = build_instruction(response, answer, "similarity")
+
+            # # Unpack keystring object
+            # keystring = keystring_object['string']      # string that evaluation and feedback will be focused on
+            # exact_match = keystring_object['exact_match'] if 'exact_match' in keystring_object else False   #TODO(change naming): this looks for inclusion of a word, not exact match of the whole answer
+            # should_contain = keystring_object['should_contain'] if 'should_contain' in keystring_object else True 
+            # custom_feedback = keystring_object['custom_feedback'] if 'custom_feedback' in keystring_object else None
+            
+            # if exact_match:
+            #     evaluation_instruction = build_instruction(response, answer, "include_word", keystring)
+            # elif should_contain:
+            #     evaluation_instruction = build_instruction(response, answer, "include")
+            # elif not should_contain:
+            #     evaluation_instruction = build_instruction(response, answer, "exclude_word", keystring)
+            # else:
+            #     # default to similarity case
+            #     evaluation_instruction = build_instruction(response, answer, "similarity")
+    else:
+        # default to similarity case if no parameters are provided
+        evaluation_instruction = build_instruction(response, answer, "similarity")
 
     with model.chat_session():
         llm_response = model.generate(evaluation_instruction, max_tokens=10)
@@ -70,7 +101,8 @@ def evaluation_function(response: Any, answer: Any, params: Any) -> EvaluationRe
             feedback = "<LLM RESPONSE ERROR> The response could not be evaluated."
             eval_response.add_feedback(("feedback", feedback))
         
-        # print("Instruction: ", evaluation_instruction)
+        print("~~~~~~~~~~~~~~~~")
+        print("Instruction: ", evaluation_instruction)
         print("Feedback:", llm_response)
         # for feedback_index in eval_response.get_feedback("feedback"):
         #     print(eval_response._feedback[feedback_index])

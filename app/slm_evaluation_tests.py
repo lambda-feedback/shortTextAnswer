@@ -23,6 +23,9 @@ class TestEvaluationFunction(unittest.TestCase):
         Use evaluation_function() to check your algorithm works 
         as it should.
     """
+
+    # -------------------------------------------------------------- CONTEXT CASES
+
     def test_slm_returns_is_correct_true(self):
         response, answer, params = "A xor gate takes 2 inputs", "There are 2 inputs in a xor gate", dict()
         result = evaluation_function(response, answer, params)
@@ -36,14 +39,43 @@ class TestEvaluationFunction(unittest.TestCase):
         
         self.assertEqual(result.get_is_correct(), False)
 
-        # -------
+    # -------------------------------------------------------------- SPECIAL CASES: include, exclude
+
+    def test_slm_reynolds_number_exact_match(self):
+        # TODO: how does this make sense? we would want to check for exact match of the whole answer and not just for one word
+        answer, params = 'Density, Velocity, Viscosity, Length', {
+            'keystrings': [{'string': 'velocity', 'exact_match': True}]}
+        incorrect_responses = [
+            'density,speed,viscosity, length',
+        ]
+
+        for response in incorrect_responses:
+            result = evaluation_function(response, answer, params)
+
+            self.assertEqual(result.get_is_correct(), False, msg=f'Response: {response}')
+
+    def test_slm_reynolds_number_should_not_contain(self):
+        # if should_contain is False, then the response should not contain the keystring
+        answer, params = 'Density, Velocity, Viscosity, Length', {
+            'keystrings': [{'string': 'direction', 'should_contain': False}]}
+        incorrect_responses = [
+            'density,speed,viscosity, length, direction',
+        ]
+
+        for response in incorrect_responses:
+            result = evaluation_function(response, answer, params)
+
+            self.assertEqual(result.get_is_correct(), False, msg=f'Response: {response}')
+
+    # -------------------------------------------------------------- DEFAULT CASE: similarity
+
     def test_slm_reynolds_number_is_correct(self):
         answer, params = 'Density, Velocity, Viscosity, Length', dict()
         correct_responses = [
             'density,velocity,viscosity,length',
             'Density,Velocity,Viscosity,Length',
             'density,characteristic velocity,viscosity,characteristic length',
-            'Density,Velocity,Shear viscosity,Length',
+            'Density,Velocity,Shear viscosity,Length',          #TODO: this should be correct but fails
             'density,velocity,viscosity,lengthscale',
             'density,velocity,shear viscosity,length',
             'density,characteristic velocity,shear viscosity,characteristic lengthscale',
@@ -61,7 +93,7 @@ class TestEvaluationFunction(unittest.TestCase):
         answer, params = 'Density, Velocity, Viscosity, Length', dict()
         incorrect_responses = [
             'density,,,',
-            'rho,u,mu,L',
+            'rho,u,mu,L',                                       # TODO: those are the symbols, why is it incorrect??
         ]
 
         for response in incorrect_responses:
@@ -73,30 +105,6 @@ class TestEvaluationFunction(unittest.TestCase):
         answer, params = 'Density, Velocity, Viscosity, Length', {'keystrings': [{'string': 'density'}, {'string': 'velocity'}, {'string': 'viscosity'}, {'string': 'length'}]}
         incorrect_responses = [
             'density,velocity,visc,',
-        ]
-
-        for response in incorrect_responses:
-            result = evaluation_function(response, answer, params)
-
-            self.assertEqual(result.get_is_correct(), False, msg=f'Response: {response}')
-
-    def test_slm_reynolds_number_exact_match(self):
-        answer, params = 'Density, Velocity, Viscosity, Length', {
-            'keystrings': [{'string': 'velocity', 'exact_match': True}]}
-        incorrect_responses = [
-            'density,speed,viscosity, length',
-        ]
-
-        for response in incorrect_responses:
-            result = evaluation_function(response, answer, params)
-
-            self.assertEqual(result.get_is_correct(), False, msg=f'Response: {response}')
-
-    def test_slm_reynolds_number_should_not_contain(self):
-        answer, params = 'Density, Velocity, Viscosity, Length', {
-            'keystrings': [{'string': 'direction', 'should_contain': False}]}
-        incorrect_responses = [
-            'density,speed,viscosity, length, direction',
         ]
 
         for response in incorrect_responses:
