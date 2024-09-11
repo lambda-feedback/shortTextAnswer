@@ -133,5 +133,16 @@ class TestEvaluationFunction(unittest.TestCase):
             result = evaluation_function(response, answer, params)
             self.assertEqual(result.get("is_correct"), True, msg=f'Response: {response}')
 
+    def test_negation(self):
+        answer, params = 'not light blue', dict()
+        correct_responses = [
+            'bright blue',
+            'light blue'
+        ]
+
+        for response in correct_responses:
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result.get("is_correct"), True, msg=f'Response: {response}')
+
 if __name__ == "__main__":
     unittest.main()

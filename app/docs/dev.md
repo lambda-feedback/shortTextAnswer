@@ -37,6 +37,15 @@ Otherwise, it will have the additional fields:
 
 If the method is w2v, it means the two texts were found to be similar. Otherwise, a BOW vector similarity check is performed in order to identify the most likely word that caused the texts to be found dissimilar.
 
+## Initial SetUp
+Follow Docker Image instructions and run 
+`docker build -t <image_name> .` in app/
+
+Otherwise if setup locally:
+1. create a venv
+2. in the venv `pip install -r app/requirements.txt`
+3. if errors encountered with nltk packages, follow `testing_nltk.py` instructions
+
 ## Examples
 *List of example inputs and outputs for this function, each under a different sub-heading*
 
