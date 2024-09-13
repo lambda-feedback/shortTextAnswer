@@ -56,8 +56,8 @@ class EvaluationResponse:
     def serialise(self, include_test_data=False) -> dict:
         out = dict(is_correct=self.is_correct, feedback=self._serialise_feedback())
         if include_test_data:
+            # if include_test_data is true, then add the other metadata, if false (as aws is by default setting it to false)
             out.update(dict(tags=list(self._feedback_tags.keys())))
-            # TODO: if include_test_data is true, then add the other metadata , if false (as aws is by default setting it to false)
             if len(self._metadata) > 0:
                 out.update(dict(metadata=self._metadata))
             if self._processing_time >= 0:

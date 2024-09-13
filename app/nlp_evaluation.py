@@ -77,11 +77,11 @@ def evaluation_function(response, answer, params) -> EvaluationResponse:
 
             if should_contain is True and max_score < threshold and problematic_keystring is None:
                 problematic_keystring = keystring
-                feedback = f"Cannot determine if the answer is correct. Please provide more information about '{problematic_keystring}'"
+                feedback = f"Similarity: {'%.3f'%(max_score)}. Please provide more information about '{problematic_keystring}'"
 
             if should_contain is False and max_score > threshold and problematic_keystring is None:
                 problematic_keystring = keystring
-                feedback = f"Cannot determine if the answer is correct. Identified '{problematic_keystring}' in the answer, which was not expected."
+                feedback = f"Identified '{problematic_keystring}' in the answer, which was not expected."
 
             if custom_feedback is not None:
                 feedback = f"Cannot determine if the answer is correct. {custom_feedback}"
@@ -99,7 +99,7 @@ def evaluation_function(response, answer, params) -> EvaluationResponse:
     w2v_similarity = sentence_similarity_mean_w2v(response, answer)
 
     if w2v_similarity > 0.75:
-        feedback = f"Confidence: {'%.3f'%(w2v_similarity)}%"
+        feedback = f"Similarity: {'%.3f'%(w2v_similarity)}%"
         eval_response.add_feedback(("feedback", feedback))
         eval_response.is_correct = True
         eval_response.add_metadata("response", response)
@@ -111,14 +111,14 @@ def evaluation_function(response, answer, params) -> EvaluationResponse:
     else:
         similarity, response_scores, answer_scores = sentence_similarity(response, answer)
         dif = 0
-        word = None
+        word = None             # this is the word that is most responsible for the difference between the answer and response
         for (resp_score, ans_score) in zip(response_scores, answer_scores):
             if ans_score[0] - resp_score[0] > dif:
                 dif = ans_score[0] - resp_score[0]
                 word = resp_score[1]
 
         both_one_word = len(response.split(' ')) == 1 and len(answer.split(' ')) == 1
-        more_info_msg = f'Please provide more information about {word}' if word is not None else ''
+        more_info_msg = f'Please provide more information about {word}.' if word is not None else ''
         feedback_msg = (
             "Incorrect" if both_one_word
             else f"Cannot determine if the answer is correct ({'%.3f'%(w2v_similarity)}% similarity). {more_info_msg}" )

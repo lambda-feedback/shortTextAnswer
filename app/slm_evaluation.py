@@ -56,38 +56,31 @@ def evaluation_function(response: Any, answer: Any, params: Any) -> EvaluationRe
     (Reverted) Cases for exact_match or inclusion of a given word to distinguish between instruction prompts for the model
         -> such checks are done by the NLP algorithm and not by the model
         -> model only checks for context similarity between the response and the answer
+
+        Should still use the keystrings and check if the response contains something similar to them.
+            -> exact_match looks if that keystring appears in the response (done by NLP)
+            -> otherwise check if similar words are present in the response (done by SLM)
+
     TODO: Could the eval function receive the question for context checking? 
     """
 
-    # if params is not None and "keystrings" in params:
-    #     keystrings = params["keystrings"]
-    #     # problematic_keystring = None
-    #     for keystring_object in keystrings:
-
-    #         # if either exact_match , should_contain or custom_feedback is in the keystring object
-    #         # then --- NLP evaluation function --- is called
-    #         # if 'exact_match' in keystring_object or 'should_contain' in keystring_object or 'custom_feedback' in keystring_object:
-    #         #     return nlp_evaluation_function(response, answer, params)
-    #         # else:
-    #         #     evaluation_instruction = build_instruction(response, answer, "similarity")
-
-    #         # Unpack keystring object
-    #         keystring = keystring_object['string']      # string that evaluation and feedback will be focused on
-    #         exact_match = keystring_object['exact_match'] if 'exact_match' in keystring_object else False   #TODO(change naming): this looks for inclusion of a word, not exact match of the whole answer
-    #         should_contain = keystring_object['should_contain'] if 'should_contain' in keystring_object else True 
-    #         custom_feedback = keystring_object['custom_feedback'] if 'custom_feedback' in keystring_object else None
+    # STEP 1: check if the keystrings are present in the response (contextually)
+    problematic_keystrings = []
+    if params is not None and "keystrings" in params:
+        keystrings = params["keystrings"]
+        for keystring_object in keystrings:
+            keystring = keystring_object['string']      # string that evaluation and feedback will be focused on
             
-    #         if exact_match:
-    #             evaluation_instruction = build_instruction(response, answer, "include_word", keystring)
-    #         elif should_contain:
-    #             evaluation_instruction = build_instruction(response, answer, "include")
-    #         elif not should_contain:
-    #             evaluation_instruction = build_instruction(response, answer, "exclude_word", keystring)
-    #         else:
-    #             # default to similarity case
-    #             evaluation_instruction = build_instruction(response, answer, "similarity")
-    # else:
-    # default to similarity case if no parameters are provided
+            # check if the keystring is found in the response or if something similar is contained in the response
+            keystring_instruction = build_instruction(response, answer, "include_word", keystring)
+            keystring_llm_response = model.generate(keystring_instruction, max_tokens=10)
+            if not process_response_corectness(keystring_llm_response):
+                # if the keystring is not found in the response, add it to the list of problematic keystrings
+                problematic_keystrings.append(keystring)
+                # print(keystring_instruction)
+                # print("Keystring not found in response: ", keystring)
+
+    # STEP 2: default to similarity case if no parameters are provided
     evaluation_instruction = build_instruction(response, answer, "similarity")
 
     with model.chat_session():
@@ -100,7 +93,15 @@ def evaluation_function(response: Any, answer: Any, params: Any) -> EvaluationRe
         feedback = ""
         if is_correct is not None:
             eval_response.is_correct = is_correct
-            feedback = "The response is {}.".format("correct" if is_correct else "incorrect")
+            if problematic_keystrings.__len__() > 0:
+                if is_correct:
+                    feedback = "The response is ALMOST correct. However, the response should also focus on ideas regarding: " + ", ".join(problematic_keystrings)
+                else:
+                    feedback = "The response is incorrect. The response should focus on ideas regarding: " + ", ".join(problematic_keystrings)
+                # even if the similarity decided that the response is correct, the problematic keystrings override this decision
+                eval_response.is_correct = False
+            else:
+                feedback = "The response is contextually {}.".format("correct" if is_correct else "incorrect")
             eval_response.add_feedback(("feedback", feedback))
         else:
             eval_response.is_correct = False
