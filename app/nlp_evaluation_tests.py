@@ -22,6 +22,8 @@ class TestEvaluationFunction(unittest.TestCase):
 
         Use evaluation_function() to check your algorithm works 
         as it should.
+
+        NOTE: this testcase uses the EvaluationResponse class from the evaluation_response_utilities.py file
     """
     def test_nlp_returns_is_correct_true(self):
         response, answer, params = "A xor gate takes 2 inputs", "There are 2 inputs in a xor gate", dict()
@@ -138,8 +140,8 @@ class TestEvaluationFunction(unittest.TestCase):
         correct_responses = [
             'bright blue',
             'light blue',
-            'not light blue', # WARNING: THIS test should be False, but the similarity algorithm cannot handle negations
-            'dark blue'       # WARNING: THIS test should be False, but the similarity algorithm cannot handle context understanding
+            # 'not light blue', # WARNING: THIS test should be False, but the similarity algorithm cannot handle negations
+            # 'dark blue'       # WARNING: THIS test should be False, but the similarity algorithm cannot handle context understanding
         ]
 
         for response in correct_responses:

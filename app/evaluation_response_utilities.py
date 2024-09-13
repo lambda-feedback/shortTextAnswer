@@ -35,13 +35,6 @@ class EvaluationResponse:
         else:
             raise TypeError("Feedback must be on the form (tag, feedback).")
 
-    def add_feedback_from_tags(self, tags, graph, inputs):
-        for tag in tags:
-            if tag not in self._feedback_tags.keys():
-                feedback_string = graph.criteria[tag].feedback_string_generator(inputs)
-                if feedback_string is not None:
-                    self.add_feedback((tag, feedback_string))
-
     def add_metadata(self, name, data):
         self._metadata.update({name: data})
     
@@ -62,13 +55,15 @@ class EvaluationResponse:
 
     def serialise(self, include_test_data=False) -> dict:
         out = dict(is_correct=self.is_correct, feedback=self._serialise_feedback())
-        out.update(dict(tags=list(self._feedback_tags.keys())))
-        if len(self._metadata) > 0:
-            out.update(dict(metadata=self._metadata))
-        if self._processing_time >= 0:
-            out.update(dict(processing_time=self._processing_time))
-        if self._evaluation_type is not None:
-            out.update(dict(evaluation_type=self._evaluation_type))
+        if include_test_data:
+            out.update(dict(tags=list(self._feedback_tags.keys())))
+            # TODO: if include_test_data is true, then add the other metadata , if false (as aws is by default setting it to false)
+            if len(self._metadata) > 0:
+                out.update(dict(metadata=self._metadata))
+            if self._processing_time >= 0:
+                out.update(dict(processing_time=self._processing_time))
+            if self._evaluation_type is not None:
+                out.update(dict(evaluation_type=self._evaluation_type))
         return out
 
     def __getitem__(self, key):

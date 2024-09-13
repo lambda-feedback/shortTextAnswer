@@ -52,44 +52,50 @@ def evaluation_function(response: Any, answer: Any, params: Any) -> EvaluationRe
     eval_response.add_evaluation_type("slm")
     evaluation_instruction = ""
     
-    # TODO(in progress): introduce the parameters for exact_match or inclusion of a given word to distinguish between instruction prompts for the model
-    #  such checks should be done by an algorithm and not by the model, or point to --- NLP evaluation function ---
-    if params is not None and "keystrings" in params:
-        keystrings = params["keystrings"]
-        # problematic_keystring = None
-        for keystring_object in keystrings:
+    """
+    (Reverted) Cases for exact_match or inclusion of a given word to distinguish between instruction prompts for the model
+        -> such checks are done by the NLP algorithm and not by the model
+        -> model only checks for context similarity between the response and the answer
+    TODO: Could the eval function receive the question for context checking? 
+    """
 
-            # if either exact_match , should_contain or custom_feedback is in the keystring object
-            # then --- NLP evaluation function --- is called
-            if 'exact_match' in keystring_object or 'should_contain' in keystring_object or 'custom_feedback' in keystring_object:
-                return nlp_evaluation_function(response, answer, params)
-            else:
-                evaluation_instruction = build_instruction(response, answer, "similarity")
+    # if params is not None and "keystrings" in params:
+    #     keystrings = params["keystrings"]
+    #     # problematic_keystring = None
+    #     for keystring_object in keystrings:
 
-            # # Unpack keystring object
-            # keystring = keystring_object['string']      # string that evaluation and feedback will be focused on
-            # exact_match = keystring_object['exact_match'] if 'exact_match' in keystring_object else False   #TODO(change naming): this looks for inclusion of a word, not exact match of the whole answer
-            # should_contain = keystring_object['should_contain'] if 'should_contain' in keystring_object else True 
-            # custom_feedback = keystring_object['custom_feedback'] if 'custom_feedback' in keystring_object else None
+    #         # if either exact_match , should_contain or custom_feedback is in the keystring object
+    #         # then --- NLP evaluation function --- is called
+    #         # if 'exact_match' in keystring_object or 'should_contain' in keystring_object or 'custom_feedback' in keystring_object:
+    #         #     return nlp_evaluation_function(response, answer, params)
+    #         # else:
+    #         #     evaluation_instruction = build_instruction(response, answer, "similarity")
+
+    #         # Unpack keystring object
+    #         keystring = keystring_object['string']      # string that evaluation and feedback will be focused on
+    #         exact_match = keystring_object['exact_match'] if 'exact_match' in keystring_object else False   #TODO(change naming): this looks for inclusion of a word, not exact match of the whole answer
+    #         should_contain = keystring_object['should_contain'] if 'should_contain' in keystring_object else True 
+    #         custom_feedback = keystring_object['custom_feedback'] if 'custom_feedback' in keystring_object else None
             
-            # if exact_match:
-            #     evaluation_instruction = build_instruction(response, answer, "include_word", keystring)
-            # elif should_contain:
-            #     evaluation_instruction = build_instruction(response, answer, "include")
-            # elif not should_contain:
-            #     evaluation_instruction = build_instruction(response, answer, "exclude_word", keystring)
-            # else:
-            #     # default to similarity case
-            #     evaluation_instruction = build_instruction(response, answer, "similarity")
-    else:
-        # default to similarity case if no parameters are provided
-        evaluation_instruction = build_instruction(response, answer, "similarity")
+    #         if exact_match:
+    #             evaluation_instruction = build_instruction(response, answer, "include_word", keystring)
+    #         elif should_contain:
+    #             evaluation_instruction = build_instruction(response, answer, "include")
+    #         elif not should_contain:
+    #             evaluation_instruction = build_instruction(response, answer, "exclude_word", keystring)
+    #         else:
+    #             # default to similarity case
+    #             evaluation_instruction = build_instruction(response, answer, "similarity")
+    # else:
+    # default to similarity case if no parameters are provided
+    evaluation_instruction = build_instruction(response, answer, "similarity")
 
     with model.chat_session():
         llm_response = model.generate(evaluation_instruction, max_tokens=10)
         end_time = time.process_time()
 
         eval_response.add_processing_time(end_time - start_time)
+        eval_response.add_metadata("response", response)
         is_correct = process_response_corectness(llm_response)
         feedback = ""
         if is_correct is not None:
@@ -100,10 +106,10 @@ def evaluation_function(response: Any, answer: Any, params: Any) -> EvaluationRe
             eval_response.is_correct = False
             feedback = "<LLM RESPONSE ERROR> The response could not be evaluated."
             eval_response.add_feedback(("feedback", feedback))
-        
-        print("~~~~~~~~~~~~~~~~")
-        print("Instruction: ", evaluation_instruction)
-        print("Feedback:", llm_response)
+
+        # print("~~~~~~~~~~~~~~~~")
+        # print("Instruction: ", evaluation_instruction)
+        # print("Feedback:", llm_response)
         # for feedback_index in eval_response.get_feedback("feedback"):
         #     print(eval_response._feedback[feedback_index])
         # print("-- Time taken to generate response: ", end_time - start_time, " seconds --")

@@ -92,16 +92,9 @@ def evaluation_function(response, answer, params) -> EvaluationResponse:
             eval_response.add_processing_time(time.process_time() - start_time)
             eval_response.add_metadata("keystring-scores", keystring_scores)
             eval_response.add_metadata("response", response)
+            eval_response.add_metadata("problematic_keystring", problematic_keystring)
+            eval_response.add_metadata("similarity_value", max_score)
             return eval_response
-            # return {
-            #     "is_correct": False,
-            #     "result": {
-            #         "response": response,
-            #         "processing_time": time.process_time() - start_time,
-            #         "keystring-scores": keystring_scores
-            #     },
-            #     "feedback": feedback
-            # }
 
     w2v_similarity = sentence_similarity_mean_w2v(response, answer)
 
@@ -114,16 +107,6 @@ def evaluation_function(response, answer, params) -> EvaluationResponse:
         eval_response.add_metadata("similarity_value", w2v_similarity)
         eval_response.add_processing_time(time.process_time() - start_time)
         return eval_response
-        # return {
-        #     "is_correct": True,
-        #     "result": {
-        #         "response": response,
-        #         "processing_time": time.process_time() - start_time,
-        #         "method": "w2v",
-        #         "similarity_value": w2v_similarity
-        #     },
-        #     "feedback": f"Confidence: {'%.3f'%(w2v_similarity)}%"
-        # }
 
     else:
         similarity, response_scores, answer_scores = sentence_similarity(response, answer)
@@ -149,18 +132,6 @@ def evaluation_function(response, answer, params) -> EvaluationResponse:
         eval_response.add_metadata("problematic_word", word)
         eval_response.add_processing_time(time.process_time() - start_time)
         return eval_response
-        # return {
-        #     "is_correct": False,
-        #     "result": {
-        #         "response": response,
-        #         "processing_time": time.process_time() - start_time,
-        #         "method": "BOW vector similarity",
-        #         "similarity_value": w2v_similarity,
-        #         "BOW_similarity_value": similarity,
-        #         "problematic_word": word
-        #     },
-        #     "feedback": feedback_msg,
-        # }
 
 
 def word_information_content(word, blen, freqs):
