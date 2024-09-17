@@ -133,3 +133,6 @@ dmypy.json
 
 # Models
 app/models/
+
+# Poetry
+poetry.lock

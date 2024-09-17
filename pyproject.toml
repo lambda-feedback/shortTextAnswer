@@ -1,0 +1,38 @@
+[tool.poetry]
+name = "app"
+version = "0.1.0"
+description = "short Text Evaluation Function"
+authors = ["neagualexa <ngu.alexandra@gmail.com>"]
+readme = "README.md"
+
+# ------- FOR DEBIAN & local
+[tool.poetry.dependencies]
+python = "^3.11"
+numpy = "^1.26.4"
+nltk = "3.8.1"
+gensim = "^4.3.3"
+matplotlib = "^3.9.2"
+certifi = "^2024.8.30"
+requests = "^2.32.3"
+urllib3 = "^2.2.3"
+idna = "^3.10"
+gpt4all = "^2.8.2"
+# gpt4all = "*" # "^2.8.2" - cannot be installed on debian
+
+# ------- FOR AMAZON LINUX 2
+# [tool.poetry.dependencies]
+# python = "^3.8.17"
+# numpy = "^1.24.4"
+# nltk = "^3.8.1"
+# gensim = "^4.3.3"
+# matplotlib = "^3.7.5"
+# certifi = "^2023.7.22"
+# gpt4all = "^2.8.2"
+# urllib3 = "^1.26.16"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.2.2"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
