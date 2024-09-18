@@ -7,7 +7,7 @@ readme = "README.md"
 
 # ------- FOR DEBIAN & local
 [tool.poetry.dependencies]
-python = "^3.11"
+python = "3.11"
 numpy = "^1.26.4"
 nltk = "3.8.1"
 gensim = "^4.3.3"

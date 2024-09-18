@@ -14,6 +14,9 @@ def build_instruction(response, answer, case, keystring=""):
         # DEFAULT CASE for whole sentence check
         case = similarity + " or if " + include
         instruction = example_scenario + base_instruction.format(response=response, answer=answer, case=case)
+    elif case == 'TEST':
+        # TEST CASE
+        instruction = base_prompt.format(response=response, answer=answer)
     else:
         raise ValueError("Invalid case. Please provide a valid case: 'include', 'exclude_word' or 'similarity'")
 
@@ -36,3 +39,17 @@ exclude_word = "the Response does not contain '{keystring}'"
 similarity = "the Response is similar to or describes the Answer"
 include = "the Response is a subset of the Answer"          # descriptive version
 
+base_prompt = """You are an expert educator tasked with rigorously comparing student responses to correct answers. Carefully evaluate each response, looking for errors, misunderstandings, or deviations in meaning, including issues of precision, negation, missing details, or conceptual differences. If the student demonstrates partial understanding, identify exactly where they made a mistake and what they got right.
+
+Provide a score from 0 to 1, where:
+- 1 means the responses are identical in meaning,
+- 0 means they are completely unrelated or opposite,
+- Intermediate values (e.g., 0.5) represent partial understanding.
+
+Correct answer: "{answer}"
+Student response: "{response}"
+
+Score: [Insert score]
+Comment: [Insert explanation about the discrepancies found.]
+
+"""

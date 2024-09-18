@@ -20,7 +20,7 @@ WORKDIR /app
 COPY pyproject.toml ./
 
 # Generate poetry.lock specific to the container environment
-RUN poetry lock
+# RUN poetry lock
 
 # Install dependencies via Poetry
 RUN --mount=type=cache,target=$POETRY_CACHE_DIR \
@@ -80,12 +80,12 @@ RUN rm /usr/share/nltk_data/tokenizers/*.zip
 
 # Set environment variables for running the evaluation function
 ENV FUNCTION_COMMAND="python"
-ENV FUNCTION_ARGS="-m,app.main,--no-sandbox"
+ENV FUNCTION_ARGS="-m,app.evaluation,--no-sandbox"
 ENV FUNCTION_RPC_TRANSPORT="ipc"
 ENV LOG_LEVEL="debug"
 
 # # Command to start the evaluation function
-# CMD [ "python", "-m", "app.main" ]
+# CMD [ "python", "-m", "app.evaluation" ]
 # ------- FOR DEBIAN
 # Keep the container running
 CMD ["tail", "-f", "/dev/null"]
