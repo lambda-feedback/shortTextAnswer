@@ -17,6 +17,8 @@ requests = "^2.32.3"
 urllib3 = "^2.2.3"
 idna = "^3.10"
 gpt4all = "^2.8.2"
+flake8 = "^7.1.1"
+pytest = "^8.3.3"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.2.2"
