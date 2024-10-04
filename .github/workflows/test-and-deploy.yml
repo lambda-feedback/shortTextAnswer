@@ -74,6 +74,7 @@ jobs:
         env:
           NLTK_DATA: /usr/share/nltk_data
         run: |
+          ls -la 
           ./scripts/download_nltk.sh
 
       - name: Load cached models
