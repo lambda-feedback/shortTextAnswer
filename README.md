@@ -1,8 +1,8 @@
 # Evaluation Function Template Repository
 
-This template repository contains the boilerplate code needed in order to create an AWS Lambda function that can be written by any tutor to grade a response area in any way they like.
+This template repository contains the Evaluation Funcion for evaluating Short Answer Questions (SAQs). Short answer questions require a concise and focused response that may be factual, interpretive or a combination of the two. Such questions can reveal a student’s ability to describe, explain, reason, create, analyse, synthesise, and evaluate.
 
-This version is specifically for python, however the ultimate goal is to make similar boilerplate repositories in any language, allowing tutors the freedom to code in what they feel most comfortable with.
+This version is specifically for python.
 
 ## Table of Contents
 - [Evaluation Function Template Repository](#evaluation-function-template-repository)
@@ -38,7 +38,7 @@ config.json # Specify the name of the evaluation function in this file
 
 ## Usage
 
-### Getting Started
+### Getting Started using the Boilerplate
 
 1. Clone this repository
 2. Change the name of the evaluation function in `config.json`
