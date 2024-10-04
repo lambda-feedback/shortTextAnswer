@@ -9,9 +9,11 @@ from nltk import word_tokenize
 from nltk.data import find
 
 try:
-    from .evaluation_response_utilities import EvaluationResponse
+    # from .evaluation_response_utilities import EvaluationResponse
+    from .evaluation_response import Result as EvaluationResponse              # NOTE: instead of importing from lf_toolkit.evaluation as more attributes are added to the class
 except ImportError:
-    from evaluation_response_utilities import EvaluationResponse
+    # from evaluation_response_utilities import EvaluationResponse
+    from evaluation_response import Result as EvaluationResponse
 
 word2vec_sample = str(find('models/word2vec_sample/pruned.word2vec.txt'))
 w2v = gensim.models.KeyedVectors.load_word2vec_format(word2vec_sample, binary=False)
@@ -84,10 +86,11 @@ def evaluation_function(response, answer, params) -> EvaluationResponse:
                 feedback = f"Identified '{problematic_keystring}' in the answer, which was not expected."
 
             if custom_feedback is not None:
-                feedback = f"Cannot determine if the answer is correct. {custom_feedback}"
+                feedback = f"Cannot determine if the answer is correct. {custom_feedback} CUSTOM_FEEDBACK"
 
         if problematic_keystring is not None:
-            eval_response.add_feedback(("feedback", feedback))
+            # eval_response.add_feedback(("feedback", feedback))
+            eval_response.add_feedback("feedback", feedback) # NOTE: lf_toolkit Result in evaluation_response.py
             eval_response.is_correct = False
             eval_response.add_processing_time(time.process_time() - start_time)
             eval_response.add_metadata("keystring-scores", keystring_scores)
@@ -100,7 +103,8 @@ def evaluation_function(response, answer, params) -> EvaluationResponse:
 
     if w2v_similarity > 0.75:
         feedback = f"Similarity: {'%.3f'%(w2v_similarity)}%"
-        eval_response.add_feedback(("feedback", feedback))
+        # eval_response.add_feedback(("feedback", feedback))
+        eval_response.add_feedback("feedback", feedback) # NOTE: lf_toolkit Result in evaluation_response.py
         eval_response.is_correct = True
         eval_response.add_metadata("response", response)
         eval_response.add_metadata("method", "w2v")
@@ -123,7 +127,8 @@ def evaluation_function(response, answer, params) -> EvaluationResponse:
             "Incorrect" if both_one_word
             else f"Cannot determine if the answer is correct ({'%.3f'%(w2v_similarity)}% similarity). {more_info_msg}" )
 
-        eval_response.add_feedback(("feedback", feedback_msg))
+        # eval_response.add_feedback(("feedback", feedback_msg))
+        eval_response.add_feedback("feedback", feedback_msg) # NOTE: lf_toolkit Result in evaluation_response.py
         eval_response.is_correct = False
         eval_response.add_metadata("response", response)
         eval_response.add_metadata("method", "BOW vector similarity")
@@ -160,9 +165,9 @@ def sentence_similarity(response: str, answer: str):
     answer_words = answer.split()
     all_words = list(set((response_words + answer_words)))
 
-    with open('brown_length', 'rb') as fp:
+    with open('app/nlp/brown_length', 'rb') as fp:
         blen = pickle.load(fp)
-    with open('word_freqs', 'rb') as fp:
+    with open('app/nlp/word_freqs', 'rb') as fp:
         freqs = pickle.load(fp)
 
     def sencence_scores(common_words, sentence):

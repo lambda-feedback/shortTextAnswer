@@ -128,14 +128,23 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# MacOS files
-.DS_Store
+# VSCode configuration
+.vscode
 
-# Testing
-app/testing/
+# Evaluation function config
+config.json
 
-# Models
+# README
+README.md
+
+# GitHub
+.github
+
+# Data folder
+data/
+
+# Test reports
+reports/
+
+# Models to be downloaded from the internet
 app/models/
-
-# Poetry
-poetry.lock

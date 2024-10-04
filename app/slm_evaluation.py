@@ -2,24 +2,21 @@ from gpt4all import GPT4All
 import time
 from typing import Any, TypedDict
 try:
-    from .evaluation_response_utilities import EvaluationResponse
-except ImportError:
-    from evaluation_response_utilities import EvaluationResponse
-
-try:
+    # from .evaluation_response_utilities import EvaluationResponse
+    from .evaluation_response import Result as EvaluationResponse              # NOTE: instead of importing from lf_toolkit.evaluation as more attributes are added to the class
     from .slm_instructions import build_instruction
-except ImportError:
-    from slm_instructions import build_instruction
-
-try:
     from .nlp_evaluation import evaluation_function as nlp_evaluation_function
 except ImportError:
+    # from evaluation_response_utilities import EvaluationResponse
+    from evaluation_response import Result as EvaluationResponse
+    from slm_instructions import build_instruction
     from nlp_evaluation import evaluation_function as nlp_evaluation_function
+
 
 class Params(TypedDict):
     pass
 
-model = GPT4All(model_name="Phi-3.5-mini-instruct-Q6_K.gguf",model_path="app/models/", allow_download=False) # downloads / loads the model
+model = GPT4All(model_name="Phi-3.5-mini-instruct-Q6_K.gguf",model_path="app/models/", allow_download=False, device="cpu") # downloads / loads the model
 # instruction = "Compare the following two sections: Response='{response}' & Answer='{answer}'. Write 'True' if the response perfectly matches the answer, 'False' otherwise. Do not provide any explanation."
 
 def evaluation_function(response: Any, answer: Any, params: Any) -> EvaluationResponse:
@@ -102,17 +99,17 @@ def evaluation_function(response: Any, answer: Any, params: Any) -> EvaluationRe
                 eval_response.is_correct = False
             else:
                 feedback = "The response is contextually {}.".format("correct" if is_correct else "incorrect")
-            eval_response.add_feedback(("feedback", feedback))
+            # eval_response.add_feedback(("feedback", feedback))
+            eval_response.add_feedback("feedback", feedback) # NOTE: lf_toolkit Result in evaluation_response.py
         else:
             eval_response.is_correct = False
             feedback = "<LLM RESPONSE ERROR> The response could not be evaluated."
-            eval_response.add_feedback(("feedback", feedback))
+            # eval_response.add_feedback(("feedback", feedback))
+            eval_response.add_feedback("feedback", feedback) # NOTE: lf_toolkit Result in evaluation_response.py
 
         # print("~~~~~~~~~~~~~~~~")
         # print("Instruction: ", evaluation_instruction)
         # print("Feedback:", llm_response)
-        # for feedback_index in eval_response.get_feedback("feedback"):
-        #     print(eval_response._feedback[feedback_index])
         # print("-- Time taken to generate response: ", end_time - start_time, " seconds --")
 
     return eval_response
