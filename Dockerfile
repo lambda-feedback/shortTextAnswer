@@ -41,7 +41,7 @@ ENV NLTK_DATA=/usr/share/nltk_data
 ENV MODEL_PATH=/app/models
 
 # Copy the evaluation function to the app directory
-COPY ./app .
+COPY ./app ./app
 
 # Precompile python files for faster startup
 RUN python -m compileall -q .
