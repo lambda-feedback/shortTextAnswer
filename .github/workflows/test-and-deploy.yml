@@ -17,10 +17,6 @@ jobs:
       matrix:
         python-version: [3.11.9]
 
-    defaults:
-      run:
-        working-directory: app/
-
     env:
       REQUEST_SCHEMA_URL: https://raw.githubusercontent.com/lambda-feedback/request-response-schemas/master/request.json
       RESPONSE_SCHEMA_URL: https://raw.githubusercontent.com/lambda-feedback/request-response-schemas/master/responsev2.json
