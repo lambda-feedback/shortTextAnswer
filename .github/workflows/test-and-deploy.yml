@@ -59,6 +59,7 @@ jobs:
           poetry install  --no-interaction --no-root
           python -m pip install --upgrade pip
           python -m pip install flake8 pytest
+          python -m pip install gensim
 
       - name: Load cached NLTK data
         id: nltk-cache
