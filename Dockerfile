@@ -19,7 +19,7 @@ FROM ghcr.io/lambda-feedback/evaluation-function-base/python:3.11 AS models
 
 ENV NLTK_DATA=/usr/share/nltk_data
 
-ENV MODEL_PATH=/app/models
+ENV MODEL_PATH=/app/app/models
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     wget \
