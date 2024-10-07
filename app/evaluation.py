@@ -58,7 +58,7 @@ def evaluation_function(
 
     eval_response = EvaluationResponse()
     eval_response.is_correct = False
-    include_test_data = False
+    include_test_data = True        # NOTE: for testing purposes
 
     if "include_test_data" in params:
         include_test_data = params["include_test_data"]
