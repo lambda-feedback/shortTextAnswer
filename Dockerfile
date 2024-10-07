@@ -38,7 +38,7 @@ ENV VIRTUAL_ENV=/app/.venv \
 
 ENV NLTK_DATA=/usr/share/nltk_data
 
-ENV MODEL_PATH=/app/models
+ENV MODEL_PATH=/app/app/models
 
 # Copy the evaluation function to the app directory
 COPY ./app ./app
