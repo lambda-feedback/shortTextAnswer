@@ -5,14 +5,14 @@ import time
 try:
     from .nlp_evaluation import evaluation_function as nlp_evaluation_function
     from .slm_evaluation import evaluation_function as slm_evaluation_function
-    # from .evaluation_response_utilities import EvaluationResponse as EvaluationResponse_old
-    from .evaluation_response import Result as EvaluationResponse              # NOTE: instead of importing from lf_toolkit.evaluation as more attributes are added to the class
+    from .evaluation_response_utilities import EvaluationResponse
+    # from .evaluation_response import Result as EvaluationResponse              # NOTE: instead of importing from lf_toolkit.evaluation as more attributes are added to the class
     from .slm_rephraser import rephrase_feedback
 except ImportError:
     from app.nlp_evaluation import evaluation_function as nlp_evaluation_function
     from app.slm_evaluation import evaluation_function as slm_evaluation_function
-    # from evaluation_response_utilities import EvaluationResponse as EvaluationResponse_old
-    from app.evaluation_response import Result as EvaluationResponse
+    from evaluation_response_utilities import EvaluationResponse
+    # from app.evaluation_response import Result as EvaluationResponse
     from app.slm_rephraser import rephrase_feedback
 
 
@@ -85,8 +85,8 @@ def evaluation_function(
     # STEP B: Use the SLM to rephrase the feedback
     rephrased_feedback = rephrase_feedback(response, answer, feedback_layers, custom_feedback)
 
-    # eval_response.add_feedback(("feedback", rephrased_feedback))
-    eval_response.add_feedback("feedback", rephrased_feedback) # NOTE: lf_toolkit Result in evaluation_response.py
+    eval_response.add_feedback(("feedback", rephrased_feedback))
+    # eval_response.add_feedback("feedback", rephrased_feedback) # NOTE: lf_toolkit Result in evaluation_response.py
     eval_response.is_correct = is_correct
     eval_response.add_metadata("tag", tag)
 
@@ -94,7 +94,8 @@ def evaluation_function(
     eval_response.add_processing_time(end_time - start_time)
 
     # NOTE: expected serialised output for the server handler called by main.py
-    return eval_response.to_dict(include_test_data=include_test_data)
+    return eval_response.serialise(include_test_data=include_test_data)
+    # return eval_response.to_dict(include_test_data=include_test_data)
 
 def response_handler(eval_response_nlp, eval_response_slm) -> Any:
     tag = ""

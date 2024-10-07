@@ -59,19 +59,9 @@ COPY --from=models ${MODEL_PATH} ${MODEL_PATH}
 # RUN python -m nltk.downloader punkt
 # RUN python -m nltk.downloader punkt_tab
 
-ENV EVAL_RPC_TRANSPORT="ipc"
+# Set permissions so files and directories can be accessed on AWS
+RUN chmod 644 $(find ./app -type f)
+RUN chmod 755 $(find ./app -type d)
 
-# Command to start the evaluation function with
-ENV FUNCTION_COMMAND="python"
-
-# Args to start the evaluation function with
-ENV FUNCTION_ARGS="-m,evaluation_function.main"
-
-# The transport to use for the RPC server
-ENV FUNCTION_RPC_TRANSPORT="ipc"
-
-ENV LOG_LEVEL="debug"
-
-# ------- FOR DEBIAN
-# Keep the container running
-# CMD ["tail", "-f", "/dev/null"]
+# The entrypoint for AWS is to invoke the handler function within the app package
+CMD [ "/app/app.handler" ]
