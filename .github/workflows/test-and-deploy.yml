@@ -15,11 +15,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [3.8]
-
-    defaults:
-      run:
-        working-directory: app/
+        python-version: [3.11.9]
 
     env:
       REQUEST_SCHEMA_URL: https://raw.githubusercontent.com/lambda-feedback/request-response-schemas/master/request.json
@@ -27,34 +23,84 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+        id: python-setup
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
+      
+      # - name: Load cached Poetry installation
+      #   id: poetry-cache
+      #   uses: actions/cache@v4
+      #   with:
+      #     path: ~/.local
+      #     key: poetry-0
+  
+      # - name: Install and configure Poetry
+      #   if: steps.poetry-cache.outputs.cache-hit != 'true'
+      #   uses: snok/install-poetry@v1
+      #   with:
+      #     virtualenvs-in-project: true
 
-      - name: Install dependencies
+      # - name: Load cached venv
+      #   id: dependencies-cache
+      #   uses: actions/cache@v4
+      #   with:
+      #     path: .venv
+      #     key: venv-${{ runner.os }}-${{ steps.python-setup.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
+
+      - name: Install python dependencies
+        # if: steps.dependencies-cache.outputs.cache-hit != 'true'
         run: |
           python -m pip install --upgrade pip
           python -m pip install flake8 pytest
-          python -m pip install -r requirements.txt
-          python -m nltk.downloader wordnet
-          python -m nltk.downloader word2vec_sample
-          python -m nltk.downloader brown
-          python -m nltk.downloader punkt
-          python -m nltk.downloader stopwords
+          python -m pip install -r app/requirements.txt 
+        # poetry install  --no-interaction --no-root
 
-      - name: Lint with flake8
-        run: |
-          # stop the build if there are Python syntax errors or undefined names
-          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-          # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+      - name: Load cached NLTK data
+        id: nltk-cache
+        uses: actions/cache@v4
+        with:
+          path: /usr/share/nltk_data
+          key: nltk-data-${{ hashFiles('scripts/download_nltk.sh') }}
 
-      - name: Test Evaluation Function
+      - name: Download NLTK data
+        if: steps.nltk-cache.outputs.cache-hit != 'true'
+        env:
+          NLTK_DATA: /usr/share/nltk_data
         run: |
-          pytest -v evaluation_tests.py::TestEvaluationFunction
+          ./scripts/download_nltk.sh
+
+      - name: Load cached models
+        id: models-cache
+        uses: actions/cache@v4
+        with:
+          path: ./app/models
+          key: models-${{ hashFiles('scripts/download_models.sh') }}
+
+      - name: Download models
+        if: steps.models-cache.outputs.cache-hit != 'true'
+        env:
+          MODEL_PATH: ./app/models
+        run: |
+          ./scripts/download_models.sh
+
+      # TODO: add linting / black / flake8
+      # - name: Lint with flake8
+      #   run: |
+      #     # stop the build if there are Python syntax errors or undefined names
+      #     python -m flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+      #     # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+      #     python -m flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+      # - name: Test Evaluation Function
+      #   run: |
+      #     pytest -v app/evaluation_tests.py::TestEvaluationFunction
+      #     pytest -v app/evaluation_tests.py::TestEvaluationComputingFunction
 
   deploy-staging:
     name: Deploy Staging
@@ -104,7 +150,7 @@ jobs:
           IMAGE_TAG: ${{ steps.set_function_name.outputs.function_name }}
         run: |
           # Build docker image from algorithm, schema and requirements
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG app/
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           # Push image to ECR
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
@@ -173,7 +219,7 @@ jobs:
           IMAGE_TAG: ${{ steps.set_function_name.outputs.function_name }}
         run: |
           # Build docker image from algorithm, schema and requirements
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG app/
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           # Push image to ECR
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
