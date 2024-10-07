@@ -128,5 +128,17 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
+# Test reports
+reports/
+
 # MacOS files
 .DS_Store
+
+# Testing
+app/testing/
+
+# Models
+app/models/
+
+# Poetry
+poetry.lock
