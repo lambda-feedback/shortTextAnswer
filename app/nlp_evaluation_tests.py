@@ -3,7 +3,7 @@ import unittest
 try:
     from .nlp_evaluation import evaluation_function
 except ImportError:
-    from nlp_evaluation import evaluation_function
+    from app.nlp_evaluation import evaluation_function
 
 class TestEvaluationFunction(unittest.TestCase):
     """

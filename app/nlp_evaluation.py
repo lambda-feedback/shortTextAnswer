@@ -13,7 +13,7 @@ try:
     from .evaluation_response import Result as EvaluationResponse              # NOTE: instead of importing from lf_toolkit.evaluation as more attributes are added to the class
 except ImportError:
     # from evaluation_response_utilities import EvaluationResponse
-    from evaluation_response import Result as EvaluationResponse
+    from app.evaluation_response import Result as EvaluationResponse
 
 word2vec_sample = str(find('models/word2vec_sample/pruned.word2vec.txt'))
 w2v = gensim.models.KeyedVectors.load_word2vec_format(word2vec_sample, binary=False)

@@ -4,8 +4,8 @@ try:
     from .slm_instructions import build_instruction
     from .slm_evaluation import model
 except ImportError:
-    from slm_instructions import build_instruction
-    from slm_evaluation import model
+    from app.slm_instructions import build_instruction
+    from app.slm_evaluation import model
 
 def rephrase_feedback(response: Any, answer: Any, info: Any, custom_feedback=False) -> Any:
 

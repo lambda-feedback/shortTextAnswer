@@ -5,9 +5,9 @@ try:
     from .nlp_evaluation_tests import TestEvaluationFunction as NLPTestEvaluationFunction
     from .slm_evaluation_tests import TestEvaluationFunction as SLMTestEvaluationFunction
 except ImportError:
-    from evaluation import evaluation_function
-    from nlp_evaluation_tests import TestEvaluationFunction as NLPTestEvaluationFunction
-    from slm_evaluation_tests import TestEvaluationFunction as SLMTestEvaluationFunction
+    from app.evaluation import evaluation_function
+    from app.nlp_evaluation_tests import TestEvaluationFunction as NLPTestEvaluationFunction
+    from app.slm_evaluation_tests import TestEvaluationFunction as SLMTestEvaluationFunction
 
 class TestEvaluationFunction(unittest.TestCase):
     """

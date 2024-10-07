@@ -9,11 +9,11 @@ try:
     from .evaluation_response import Result as EvaluationResponse              # NOTE: instead of importing from lf_toolkit.evaluation as more attributes are added to the class
     from .slm_rephraser import rephrase_feedback
 except ImportError:
-    from nlp_evaluation import evaluation_function as nlp_evaluation_function
-    from slm_evaluation import evaluation_function as slm_evaluation_function
+    from app.nlp_evaluation import evaluation_function as nlp_evaluation_function
+    from app.slm_evaluation import evaluation_function as slm_evaluation_function
     # from evaluation_response_utilities import EvaluationResponse as EvaluationResponse_old
-    from evaluation_response import Result as EvaluationResponse
-    from slm_rephraser import rephrase_feedback
+    from app.evaluation_response import Result as EvaluationResponse
+    from app.slm_rephraser import rephrase_feedback
 
 
 def evaluation_function(

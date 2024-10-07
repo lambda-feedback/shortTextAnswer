@@ -3,7 +3,7 @@ import unittest
 try:
     from .slm_evaluation import evaluation_function
 except ImportError:
-    from slm_evaluation import evaluation_function
+    from app.slm_evaluation import evaluation_function
 
 class TestEvaluationFunction(unittest.TestCase):
     """
