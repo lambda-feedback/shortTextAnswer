@@ -1,12 +1,10 @@
-numpy
-nltk==3.8.1
-gensim
-matplotlib
-
-# To run on cli: /Applications/Python\ 3.11/Install\ Certificates.command
-# If SSL cert fail on Mac -> command above calls pip install --upgrade certifi  -> then calling nltk.download works
-certifi
-
-# FOR SLM evaluation method
-gpt4all
-# langchain
+numpy       == 1.26.4
+nltk        == 3.8.1
+gensim      == 4.3.3
+matplotlib  == 3.9.2
+certifi     == 2024.8.30
+requests    == 2.32.3
+urllib3     == 2.2.3
+idna        == 3.10
+gpt4all     == 2.8.2
+pytest      == 8.3.3
