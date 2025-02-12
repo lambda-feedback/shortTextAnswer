@@ -6,3 +6,9 @@ matplotlib
 # To run on cli: /Applications/Python\ 3.11/Install\ Certificates.command
 # If SSL cert fail on Mac -> command above calls pip install --upgrade certifi  -> then calling nltk.download works
 certifi
+
+# Requirement for AI short text answer question
+pandas
+langchain
+langchain-openai
+python-dotenv
