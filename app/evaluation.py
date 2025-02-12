@@ -93,17 +93,36 @@ def evaluation_function(response, answer, config=None):
         - "True" if the words are semantically the same.
         - "False" if the words are semantically different.
 
+
         ### Examples:
-        Word1: "happy", Word2: "happy"  
+        Word1: "velocity", Word2: "speed"  
         Response: True
 
-        Word1: "happy", Word2: "joyful"  
+        Word1: "Pressure", Word2: "pressure"  
         Response: True
 
-        Word1: "cat", Word 2: "dog"  
+        Word1: "molecule", Word2: "molecules"  
+        Response: True
+
+        Word1: "math function", Word2: "math formulae"  
+        Response: True
+
+        Word1: "photosynthesis", Word2: "plant energy conversion"  
+        Response: True
+
+        Word1: "neuron", Word2: "planet"  
         Response: False
 
-        Word1: "bank", Word 2: "actor"  
+        Word1: "gravity", Word2: "voltage"  
+        Response: False
+
+        Word1: "robotic", Word2: "not robotic"  
+        Response: False
+
+        Word1: "molecular", Word2: "atomic"  
+        Response: False
+
+        Word1: "dark blue", Word2: "light blue"  
         Response: False
 
         ### Input:

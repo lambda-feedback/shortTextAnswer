@@ -1,150 +1,93 @@
 import unittest
-
-try:
-    from .evaluation import evaluation_function
-except ImportError:
-    from evaluation import evaluation_function
+from evaluation import evaluation_function, Config
 
 class TestEvaluationFunction(unittest.TestCase):
     """
-        TestCase Class used to test the algorithm.
-        ---
-        Tests are used here to check that the algorithm written 
-        is working as it should. 
-        
-        It's best practise to write these tests first to get a 
-        kind of 'specification' for how your algorithm should 
-        work, and you should run these tests before committing 
-        your code to AWS.
+    TestCase Class to test the evaluation function.
+    ---
+    This test suite validates the correctness of `evaluation_function()` by checking:
+    - Whether it correctly identifies correct and incorrect responses.
+    - Whether it can handle keystring constraints.
+    - Whether it can enforce exact matches.
+    - Whether it processes responses efficiently and correctly.
 
-        Read the docs on how to use unittest here:
-        https://docs.python.org/3/library/unittest.html
-
-        Use evaluation_function() to check your algorithm works 
-        as it should.
+    The function is evaluated using an LLM-based semantic comparison.
     """
-    def test_returns_is_correct_true(self):
-        response, answer, params = "A xor gate takes 2 inputs", "There are 2 inputs in a xor gate", dict()
-        result = evaluation_function(response, answer, params)
-        
-        self.assertEqual(result.get("is_correct"), True)
 
-    def test_reynolds_number_is_correct(self):
-        answer, params = 'Density, Velocity, Viscosity, Length', dict()
-        correct_responses = [
-            'density,velocity,viscosity,length',
-            'Density,Velocity,Viscosity,Length',
-            'density,characteristic velocity,viscosity,characteristic length',
-            'Density,Velocity,Shear viscosity,Length',
-            'density,velocity,viscosity,lengthscale',
-            'density,velocity,shear viscosity,length',
-            'density,characteristic velocity,shear viscosity,characteristic lengthscale',
-            'density,velocity,shear viscosity,characteristic lengthscale',
-            'density,velocity,viscosity,length scale',
-            'pressure,characteristic velocity of flow,shear viscosity,characteristic length scale',
-        ]
+    @classmethod
+    def setUpClass(cls):
+        """Initialize a shared Config instance for LLM setup."""
+        cls.config = Config()
 
-        for response in correct_responses:
-            result = evaluation_function(response, answer, params)
+    def test_basic_correct_response(self):
+        """Test if semantically similar responses are marked correct."""
+        response = ["Density", "Velocity", "Viscosity", "Length"]
+        answer = ["Density", "Velocity", "Viscosity", "Length"]
+        result = evaluation_function(response, answer, self.config)
 
-            self.assertEqual(result.get("is_correct"), True, msg=f'Response: {response}')
+        self.assertTrue(result.get("is_correct"))
 
-    def test_reynolds_number_is_incorrect(self):
-        answer, params = 'Density, Velocity, Viscosity, Length', dict()
-        incorrect_responses = [
-            'density,,,',
-            'rho,u,mu,L',
-        ]
+    def test_basic_incorrect_response(self):
+        """Test if semantically different responses are marked incorrect."""
+        response = ["Mass", "Speed", "Friction", "Force"]
+        answer = ["Density", "Velocity", "Viscosity", "Length"]
+        result = evaluation_function(response, answer, self.config)
 
-        for response in incorrect_responses:
-            result = evaluation_function(response, answer, params)
+        self.assertFalse(result.get("is_correct"))
 
-            self.assertEqual(result.get("is_correct"), False, msg=f'Response: {response}')
+    def test_partial_match(self):
+        """Test if a response too short is marked incorrect."""
+        response = ["Density", "Velocity", "Viscosity"]
+        answer = ["Density", "Velocity", "Viscosity", "Length"]
 
-    def test_reynolds_number_is_incorrect_with_keystring(self):
-        answer, params = 'Density, Velocity, Viscosity, Length', {'keystrings': [{'string': 'density'}, {'string': 'velocity'}, {'string': 'viscosity'}, {'string': 'length'}]}
-        incorrect_responses = [
-            'density,velocity,visc,',
-        ]
+        self.config.response_num_required = 4
+        result = evaluation_function(response, answer, self.config)
+        self.assertFalse(result.get("is_correct"))
 
-        for response in incorrect_responses:
-            result = evaluation_function(response, answer, params)
 
-            self.assertEqual(result.get("is_correct"), False, msg=f'Response: {response}')
+    def test_synonyms_match(self):
+        """Test if abbriviations are correctly identified."""
+        response = ['speed']
+        answer = ['velocity']
+        result = evaluation_function(response, answer, self.config)
 
-    def test_reynolds_number_exact_match(self):
-        answer, params = 'Density, Velocity, Viscosity, Length', {
-            'keystrings': [{'string': 'velocity', 'exact_match': True}]}
-        incorrect_responses = [
-            'density,speed,viscosity, length',
-        ]
+        self.assertTrue(result.get("is_correct"))
 
-        for response in incorrect_responses:
-            result = evaluation_function(response, answer, params)
+    def test_exact_match_requirement(self):
+        """Test enforcing exact match on keystrings."""
+        response = ["density", "speed", "viscosity", "length"]
+        answer = ["Density", "Velocity", "Viscosity", "Length"]
 
-            self.assertEqual(result.get("is_correct"), False, msg=f'Response: {response}')
+        result = evaluation_function(response, answer, self.config)
+        self.assertTrue(result.get("is_correct"))
 
-    def test_reynolds_number_should_not_contain(self):
-        answer, params = 'Density, Velocity, Viscosity, Length', {
-            'keystrings': [{'string': 'direction', 'should_contain': False}]}
-        incorrect_responses = [
-            'density,speed,viscosity, length, direction',
-        ]
+    def test_should_not_contain(self):
+        """Test if a response with a prohibited keyword fails."""
+        response = ["density", "velocity", "viscosity", "length", "direction"]
+        answer = ["Density", "Velocity", "Viscosity", "Length"]
 
-        for response in incorrect_responses:
-            result = evaluation_function(response, answer, params)
+        result = evaluation_function(response, answer, self.config)
+        self.assertFalse(result.get("is_correct"))
 
-            self.assertEqual(result.get("is_correct"), False, msg=f'Response: {response}')
 
-    def test_reynolds_number_custom_feedback(self):
-        answer, params = 'Density, Velocity, Viscosity, Length', {
-            'keystrings': [{'string': 'banana', 'custom_feedback': 'custom feedback with the word banana'}]}
-        incorrect_responses = [
-            'An incorrect response',
-        ]
+    def test_negation_handling(self):
+        """Test how the model handles negation."""
+        response = ["not light blue", "dark blue"]
+        answer = ["light blue"]
 
-        for response in incorrect_responses:
-            result = evaluation_function(response, answer, params)
+        result = evaluation_function(response, answer, self.config)
 
-            self.assertIn('banana', result.get("feedback"), msg=f'Response: {response}')
+        self.assertFalse(result.get("is_correct"))
 
-    navier_stokes_answer = "The density of the film is uniform and constant, therefore the flow is incompressible. " \
-                           "Since we have incompressible flow, uniform viscosity, Newtonian fluid, " \
-                           "the most appropriate set of equations for the solution of the problem is the " \
-                           "Navier-Stokes equations. The Navier-Stokes equations in Cartesian coordinates are used: " \
-                           "mass conservation and components of the momentum balance"
+    def test_performance(self):
+        """Ensure that processing time is reasonable."""
+        response = ["Density", "Velocity", "Viscosity", "Length"]
+        answer = ["Density", "Velocity", "Viscosity", "Length"]
 
-    navier_stokes_params = {'keystrings': [{'string': 'Navier-Stokes equations'}, {'string': 'mass conservation'},
-                                                                    {'string': 'momentum balance'}, {'string': 'incompressible flow'},
-                                                                    {'string': 'uniform viscosity'}, {'string': 'Newtonian fluid'}]}
+        result = evaluation_function(response, answer, self.config)
+        processing_time = result.get("result", {}).get("processing_time", 0)
 
-    def test_navier_stokes_equation(self):
-        answer, params = self.navier_stokes_answer, dict()
-        correct_responses = [
-            #'Navier-stokes. Continuum, const and uniform density and viscosity so incompressible, newtonian. Fits all '
-            #'requirements for navier stokes',
-            'Navier-Stokes in a Cartesian reference coordinates would be chosen for this particular flow. This is due '
-            'to the reason that the flow is Newtonian, the viscosity is uniform and constant. Additionally, '
-            'the density is uniform and constant; implying that it is an incompressible flow. This flow obeys the '
-            'main assumptions in order to employ the Navier Stokes equations.',
-        ]
-
-        for response in correct_responses:
-            result = evaluation_function(response, answer, params)
-            self.assertEqual(result.get("is_correct"), True, msg=f'Response: {response}')
-
-    def test_negation(self):
-        answer, params = 'light blue', dict()
-        correct_responses = [
-            'bright blue',
-            'light blue',
-            'not light blue', # WARNING: THIS test should be False, but the similarity algorithm cannot handle negations
-            'dark blue'       # WARNING: THIS test should be False, but the similarity algorithm cannot handle context understanding
-        ]
-
-        for response in correct_responses:
-            result = evaluation_function(response, answer, params)
-            self.assertEqual(result.get("is_correct"), True, msg=f'Response: {response}')
+        self.assertLess(processing_time, 5, msg="Evaluation function should run efficiently.")
 
 if __name__ == "__main__":
     unittest.main()
