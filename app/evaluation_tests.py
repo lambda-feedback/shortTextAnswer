@@ -43,6 +43,7 @@ class TestEvaluationFunction(unittest.TestCase):
         self.config.response_num_required = 4
         result = evaluation_function(response, answer, self.config)
         self.config.response_num_required = 0
+        
         self.assertFalse(result.get("is_correct"))
 
 
