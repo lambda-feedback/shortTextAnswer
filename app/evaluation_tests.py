@@ -42,13 +42,14 @@ class TestEvaluationFunction(unittest.TestCase):
 
         self.config.response_num_required = 4
         result = evaluation_function(response, answer, self.config)
+        self.config.response_num_required = 0
         self.assertFalse(result.get("is_correct"))
 
 
     def test_synonyms_match(self):
         """Test if abbriviations are correctly identified."""
-        response = ['speed']
-        answer = ['velocity']
+        response = ['velocity']
+        answer = ['speed']
         result = evaluation_function(response, answer, self.config)
 
         self.assertTrue(result.get("is_correct"))

@@ -19,7 +19,7 @@ class Config:
         self.huggingfacehub_api_token = os.getenv("HUGGINGFACE_AUTHORIZATION")
         self.endpoint_3_1_8B = os.getenv("LLAMA3_1_8B_ENDPOINT")
 
-        self.response_num_required = 3
+        self.response_num_required = 0 #initialise it with 0
 
 def setup_llm(config):
     """Initialize the LLM model (GPT-4o or LLaMA 3) based on the given configuration."""
@@ -145,6 +145,7 @@ def evaluation_function(response, answer, config=None):
     #check if student is inputting enough answers
     if len(response) < config.response_num_required:
         is_correct = False
+    
     return {
         "is_correct": is_correct,
         "result": {
@@ -160,8 +161,8 @@ def evaluation_function(response, answer, config=None):
 if __name__ == "__main__":
     custom_config = Config()
     print(evaluation_function(
-        ["Density","Density","Density"], #response
-        ["Density","Viscosity","Length","Density","Gravity","Viscosity","Length"], #answer
+        ["speed"], #response
+        ["velocity"], #answer
         custom_config
     ))
     
