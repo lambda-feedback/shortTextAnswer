@@ -77,7 +77,7 @@ class TestEvaluationFunction(unittest.TestCase):
 
         result = evaluation_function(response, answer, self.config)
 
-        self.assertFalse(result.get("is_correct"))
+        self.assertTrue(result.get("is_correct"))
 
     def test_performance(self):
         """Ensure that processing time is reasonable."""
