@@ -1,5 +1,8 @@
 import unittest
-from evaluation import evaluation_function, Config
+try:
+    from .evaluation import evaluation_function, Config
+except ImportError:
+    from evaluation import evaluation_function, Config
 
 class TestEvaluationFunction(unittest.TestCase):
     """
