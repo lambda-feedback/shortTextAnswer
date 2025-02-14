@@ -21,7 +21,7 @@ class Config:
 
         self.response_num_required = 0 #initialise it with 0
 
-def setup_llm(config):
+def setup_llm(config: Config):
     """Initialize the LLM model (GPT-4o or LLaMA 3) based on the given configuration."""
     if config.mode == 'gpt':
         return ChatOpenAI(
@@ -79,8 +79,7 @@ def evaluation_function(response, answer, config=None):
     start_time = time.process_time()
     
     # Ensure config is provided
-    if config is None:
-        config = Config()
+    config = Config() if len(config) == 0 else config
     
     # Initialize LLM
     llm = setup_llm(config)
