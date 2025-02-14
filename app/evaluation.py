@@ -21,6 +21,18 @@ class Config:
 
         self.response_num_required = 0 #initialise it with 0
 
+    def toDict(self):
+        return {
+            "mode": self.mode,
+            "llama_version": self.llama_version,
+            "temperature": self.temperature,
+            "max_new_token": self.max_new_token,
+            "openai_api_key": self.openai_api_key,
+            "huggingfacehub_api_token": self.huggingfacehub_api_token,
+            "endpoint_3_1_8B": self.endpoint_3_1_8B,
+            "response_num_required": self.response_num_required
+        }
+
 def setup_llm(config: Config):
     """Initialize the LLM model (GPT-4o or LLaMA 3) based on the given configuration."""
     if config.mode == 'gpt':
@@ -79,8 +91,11 @@ def evaluation_function(response, answer, config=None):
     start_time = time.process_time()
     
     # Ensure config is provided
-    config = Config() if (config is None or "mode" not in config) else config
-    
+    if config is None:
+        config = Config()
+    elif type(config) is dict:
+        config = Config(**config)
+
     # Initialize LLM
     llm = setup_llm(config)
     
