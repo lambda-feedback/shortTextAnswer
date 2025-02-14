@@ -79,7 +79,7 @@ def evaluation_function(response, answer, config=None):
     start_time = time.process_time()
     
     # Ensure config is provided
-    config = Config() if len(config) == 0 else config
+    config = Config() if (config is None or "mode" not in config) else config
     
     # Initialize LLM
     llm = setup_llm(config)
