@@ -13,4 +13,4 @@ pandas
 langchain
 langchain-openai
 python-dotenv
-langchain_huggingface
+# langchain_huggingface
