@@ -30,7 +30,7 @@ def setup_llm(config):
             max_tokens=config.max_new_token,
             openai_api_key=config.openai_api_key
         )
-    elif config.mode == 'llama3':
+    elif config.mode == 'llama3': # NOTE: langchain_huggingface expected "linux/arm64"
         from langchain_huggingface import HuggingFaceEndpoint
         return HuggingFaceEndpoint(
             endpoint_url=config.endpoint_3_1_8B,
