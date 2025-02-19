@@ -7,7 +7,7 @@ from langchain_openai import ChatOpenAI
 from langchain.prompts import PromptTemplate
 from dotenv import load_dotenv
 
-class Config:
+class Param:
     def __init__(self, mode='gpt', llama_version='3_1_8B', temperature=0.01, max_new_token=5):
         load_dotenv()
 
@@ -21,22 +21,46 @@ class Config:
 
         self.response_num_required = 0 #initialise it with 0
 
-def setup_llm(config):
+def compareTextLists(input_list):
+    """
+    Detects if the input is a list, and if any element in the list contains semicolons,
+    it splits that element into multiple elements.
+
+    Args:
+        input_list (list): A list of strings.
+
+    Returns:
+        list: A processed list where semicolon-separated elements are split into separate elements.
+    """
+    if not isinstance(input_list, list):
+        raise ValueError("Input must be a list of strings.")
+
+    processed_list = []
+    for item in input_list:
+        if not isinstance(item, str):
+            raise ValueError("All elements in the input list must be strings.")
+
+        # Split by semicolon if present, otherwise keep the original item
+        processed_list.extend(item.split(';') if ';' in item else [item])
+
+    return processed_list
+
+def setup_llm(param):
     """Initialize the LLM model (GPT-4o or LLaMA 3) based on the given configuration."""
-    if config.mode == 'gpt':
+    if param.mode == 'gpt':
         return ChatOpenAI(
             model="gpt-4o-mini",
-            temperature=config.temperature,
-            max_tokens=config.max_new_token,
-            openai_api_key=config.openai_api_key
+            temperature=param.temperature,
+            max_tokens=param.max_new_token,
+            openai_api_key=param.openai_api_key
         )
-    elif config.mode == 'llama3':
+    elif param.mode == 'llama3':
         from langchain_huggingface import HuggingFaceEndpoint
         return HuggingFaceEndpoint(
-            endpoint_url=config.endpoint_3_1_8B,
-            max_new_tokens=config.max_new_token,
-            temperature=config.temperature,
-            huggingfacehub_api_token=config.huggingfacehub_api_token
+            endpoint_url=param.endpoint_3_1_8B,
+            max_new_tokens=param.max_new_token,
+            temperature=param.temperature,
+            huggingfacehub_api_token=param.huggingfacehub_api_token
         )
 
 
@@ -74,16 +98,26 @@ def recursive_evaluation(responses, answers, chain, parser):
     
     return all(results), matched_pairs, unmatched_responses
 
-def evaluation_function(response, answer, config=None):
+def evaluation_function(response, answer, param=None):
     """Evaluates the given response against the answer using LLaMA 3 or GPT-4o."""
+
+
+
+
+    #split the response and answer into lists with semicolons
+    response = compareTextLists(response)
+
+
+
+
     start_time = time.process_time()
     
-    # Ensure config is provided
-    if config is None:
-        config = Config()
+    # Ensure param is provided
+    if param is None:
+        param = Param()
     
     # Initialize LLM
-    llm = setup_llm(config)
+    llm = setup_llm(param)
     
     # Define prompt template
     prompt_template = PromptTemplate(
@@ -143,7 +177,7 @@ def evaluation_function(response, answer, config=None):
     
     is_correct, correct_answers, incorrect_answers = recursive_evaluation(response, answer, chain, parser)
     #check if student is inputting enough answers
-    if len(response) < config.response_num_required:
+    if len(response) < param.response_num_required:
         is_correct = False
     
     return {
@@ -159,7 +193,7 @@ def evaluation_function(response, answer, config=None):
 
 # Example Usage
 if __name__ == "__main__":
-    custom_config = Config()
+    custom_config = Param()
     print(evaluation_function(
         ["speed"], #response
         ["velocity"], #answer
