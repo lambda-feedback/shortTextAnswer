@@ -1,43 +1,41 @@
-def process_list(input_list):
+def parse_input(input_data):
     """
-    Detects if the input is a list, and if any element in the list contains semicolons,
-    it splits that element into multiple elements.
-
+    Parses input data, handling both semicolon-separated strings and nested list structures.
+    
     Args:
-        input_list (list): A list of strings.
-
+        input_data (str or list): A semicolon-separated string or a nested list.
+    
     Returns:
-        list: A processed list where semicolon-separated elements are split into separate elements.
+        list: A processed list of elements.
     """
-    if not isinstance(input_list, list):
-        raise ValueError("Input must be a list of strings.")
+    if isinstance(input_data, str):
+        if input_data == "":
+            return []
+        return [item for item in input_data.split(';') if item]
+    elif isinstance(input_data, list) and all(isinstance(sublist, list) for sublist in input_data):
+        return [item for sublist in input_data for item in sublist]
+    else:
+        raise ValueError("Input must be either a semicolon-separated string or a nested list.")
 
-    processed_list = []
-    for item in input_list:
-        if not isinstance(item, str):
-            raise ValueError("All elements in the input list must be strings.")
-
-        # Split by semicolon if present, otherwise keep the original item
-        processed_list.extend(item.split(';') if ';' in item else [item])
-
-    return processed_list
-def test_process_list():
-    """
-    Unit tests for process_list function.
-    """
+# Testing Code
+def test_parse_input():
     test_cases = [
-        (["apple", "banana;orange", "grape"], ["apple", "banana", "orange", "grape"]),
-        (["one;two;three", "four", "five"], ["one", "two", "three", "four", "five"]),
-        (["alpha;beta", "gamma;delta;epsilon"], ["alpha", "beta", "gamma", "delta", "epsilon"]),
-        (["no_separator"], ["no_separator"]),
-        ([], []),
-        (["single"], ["single"]),
+        ("apple;banana;cherry", ["apple", "banana", "cherry"]),
+        ("one;two;three;four", ["one", "two", "three", "four"]),
+        ("hello", ["hello"]),
+        ("a;b;c;d;e", ["a", "b", "c", "d", "e"]),
+        ("", []),  # Edge case: empty string to empty list
+        ("word1;;word2", ["word1", "word2"]),  # Edge case: consecutive semicolons ignored
+        ([["a"], ["b"], ["c"], ["d"]], ["a", "b", "c", "d"]),
+        ([["apple"], ["banana"], ["cherry"]], ["apple", "banana", "cherry"]),
+        ([[]], []),  # Edge case: list of empty lists
     ]
-
-    for i, (input_list, expected_output) in enumerate(test_cases):
-        assert process_list(input_list) == expected_output, f"Test case {i+1} failed"
-
+    
+    for i, (input_data, expected) in enumerate(test_cases, 1):
+        result = parse_input(input_data)
+        assert result == expected, f"Test case {i} failed: {result} != {expected}"
+    
     print("All test cases passed!")
 
-# Run the tests
-test_process_list()
+# Run tests
+test_parse_input()

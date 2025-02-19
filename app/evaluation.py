@@ -21,29 +21,26 @@ class Param:
 
         self.response_num_required = 0 #initialise it with 0
 
-def compareTextLists(input_list):
-    """
-    Detects if the input is a list, and if any element in the list contains semicolons,
-    it splits that element into multiple elements.
 
+def parse_input(input_data):
+    """
+    Parses input data, handling both semicolon-separated strings and nested list structures.
+    
     Args:
-        input_list (list): A list of strings.
-
+        input_data (str or list): A semicolon-separated string or a nested list.
+    
     Returns:
-        list: A processed list where semicolon-separated elements are split into separate elements.
+        list: A processed list of elements.
     """
-    if not isinstance(input_list, list):
-        raise ValueError("Input must be a list of strings.")
+    if isinstance(input_data, str):
+        if input_data == "":
+            return []
+        return [item for item in input_data.split(';') if item]
+    elif isinstance(input_data, list) and all(isinstance(sublist, list) for sublist in input_data):
+        return [item for sublist in input_data for item in sublist]
+    else:
+        raise ValueError("Input must be either a semicolon-separated string or a nested list.")
 
-    processed_list = []
-    for item in input_list:
-        if not isinstance(item, str):
-            raise ValueError("All elements in the input list must be strings.")
-
-        # Split by semicolon if present, otherwise keep the original item
-        processed_list.extend(item.split(';') if ';' in item else [item])
-
-    return processed_list
 
 def setup_llm(param: Param):
     """Initialize the LLM model (GPT-4o or LLaMA 3) based on the given configuration."""
@@ -105,7 +102,7 @@ def evaluation_function(response, answer, param=None):
 
 
     #split the response and answer into lists with semicolons
-    response = compareTextLists(response)
+    response = parse_input(response)
 
 
     start_time = time.process_time()
