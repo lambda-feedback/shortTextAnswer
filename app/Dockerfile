@@ -1,21 +1,23 @@
-# Base image that bundles AWS Lambda Python 3.8 image with some middleware functions
-# FROM base-eval-tmp
-FROM rabidsheep55/python-base-eval-layer
+FROM rabidsheep55/python-base-eval-layer 
+# NOTE: this is platform "linux/amd64"
+# FROM ghcr.io/lambda-feedback/evaluation-function-base/python:3.11 
+# NOTE: transformers from huggingface requires platform "linux/arm64"
+
 
 WORKDIR /app
 
-RUN mkdir /usr/share/nltk_data
-RUN mkdir -p /usr/share/nltk_data/corpora /usr/share/nltk_data/models /usr/share/nltk_data/tokenizers
+# RUN mkdir /usr/share/nltk_data
+# RUN mkdir -p /usr/share/nltk_data/corpora /usr/share/nltk_data/models /usr/share/nltk_data/tokenizers
 
-ARG NLTK_DATA=/usr/share/nltk_data
+# ARG NLTK_DATA=/usr/share/nltk_data
 
-ENV NLTK_DATA=/usr/share/nltk_data
+# ENV NLTK_DATA=/usr/share/nltk_data
 # Copy and install any packages/modules needed for your evaluation script.
 COPY requirements.txt .
-COPY brown_length .
-COPY word_freqs .
-COPY w2v .
-RUN yum install -y wget unzip
+# COPY brown_length .
+# COPY word_freqs .
+# COPY w2v .
+# RUN yum install -y wget unzip
 RUN pip3 install -r requirements.txt
 
 # # Download NLTK data files
@@ -40,17 +42,17 @@ RUN pip3 install -r requirements.txt
 # RUN rm /usr/share/nltk_data/tokenizers/*.zip
 
 # Warnings: those commands sometimes download corrupted zips, so it is better to wget each package from the main site
-RUN python -m nltk.downloader wordnet
-RUN python -m nltk.downloader word2vec_sample
-RUN python -m nltk.downloader brown
-RUN python -m nltk.downloader stopwords
-RUN python -m nltk.downloader punkt
-RUN python -m nltk.downloader punkt_tab
+# RUN python -m nltk.downloader wordnet
+# RUN python -m nltk.downloader word2vec_sample
+# RUN python -m nltk.downloader brown
+# RUN python -m nltk.downloader stopwords
+# RUN python -m nltk.downloader punkt
+# RUN python -m nltk.downloader punkt_tab
 
 # Copy the evaluation and testing scripts
-COPY brown_length ./app/
-COPY word_freqs ./app/
-COPY w2v ./app/
+# COPY brown_length ./app/
+# COPY word_freqs ./app/
+# COPY w2v ./app/
 COPY evaluation.py ./app/
 COPY evaluation_tests.py ./app/
 
