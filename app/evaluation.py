@@ -108,13 +108,13 @@ def evaluation_function(response, answer, param=None):
     response = compareTextLists(response)
 
 
-
-
     start_time = time.process_time()
     
-    # Ensure param is provided
+    # Ensure config is provided
     if param is None:
         param = Param()
+    elif type(param) is dict:
+        param = Param(**param)
     
     # Initialize LLM
     llm = setup_llm(param)
