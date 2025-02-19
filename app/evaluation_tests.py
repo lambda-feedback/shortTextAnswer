@@ -1,8 +1,8 @@
 import unittest
 try:
-    from .evaluation import evaluation_function, Config
+    from .evaluation import evaluation_function, Param
 except ImportError:
-    from evaluation import evaluation_function, Config
+    from evaluation import evaluation_function, Param
 
 class TestEvaluationFunction(unittest.TestCase):
     """
