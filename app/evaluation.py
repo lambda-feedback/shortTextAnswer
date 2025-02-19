@@ -45,7 +45,7 @@ def compareTextLists(input_list):
 
     return processed_list
 
-def setup_llm(param):
+def setup_llm(param: Param):
     """Initialize the LLM model (GPT-4o or LLaMA 3) based on the given configuration."""
     if param.mode == 'gpt':
         return ChatOpenAI(
