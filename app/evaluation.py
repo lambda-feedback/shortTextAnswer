@@ -97,15 +97,16 @@ def recursive_evaluation(responses, answers, chain, parser):
 
 def evaluation_function(response, answer, param=None):
     """Evaluates the given response against the answer using LLaMA 3 or GPT-4o."""
-
+    start_time = time.process_time()
 
 
 
     #split the response and answer into lists with semicolons
     response = parse_input(response)
+    answer = parse_input(answer)
 
 
-    start_time = time.process_time()
+
     
     # Ensure config is provided
     if param is None:
@@ -192,8 +193,8 @@ def evaluation_function(response, answer, param=None):
 if __name__ == "__main__":
     custom_config = Param()
     print(evaluation_function(
-        ["speed"], #response
-        ["velocity"], #answer
+        "speed,red", #response
+        "red, velocity", #answer
         custom_config
     ))
     
