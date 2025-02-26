@@ -108,14 +108,17 @@ def evaluation_function(response, answer, param=None):
     response = parse_input(response)
     answer = parse_input(answer)
 
-    print("response: ", response, "; answer: ", answer) #TODO: debugging
+    print("response: ", response, "; answer: ", answer, "; param: ", param) #TODO: debugging
 
     
     # Ensure config is provided
     if param is None:
+        print("param is None, set default...") #TODO: debugging
         param = Param()
     elif type(param) is dict:
+        print("param is dict, load them...") #TODO: debugging
         param = Param(**param)
+    print("param: ", param) #TODO: debugging
     
     # Initialize LLM
     print("Setting up LLM...") #TODO: debugging
