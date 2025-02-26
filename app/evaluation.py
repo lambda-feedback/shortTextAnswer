@@ -116,10 +116,14 @@ def evaluation_function(response, answer, param=None):
         print("param is None, set default...") #TODO: debugging
         param = Param()
     elif type(param) is dict:
-        print("param is dict, load them...") #TODO: debugging
         if "param" in param:
             param = param["param"]
-        param = Param(**param)
+        if param is None:
+            print("param is None, set default...") #TODO: debugging
+            param = Param()
+        else:
+            print("param is dict, load param: ", param) #TODO: debugging
+            param = Param(**param)
     print("param: ", param) #TODO: debugging
     
     # Initialize LLM
