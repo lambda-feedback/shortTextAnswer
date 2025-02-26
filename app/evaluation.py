@@ -79,6 +79,8 @@ def recursive_evaluation(responses, answers, chain, parser):
             eval_result = chain.invoke({"word": res, "target": ans})
             eval_result_content = eval_result.content
             similarity_result = parser.invoke(eval_result_content)
+
+            print("eval_result_content: ", eval_result_content, "; similarity_result: ", similarity_result, "; res: ", res, "; ans: ", ans) #TODO: debugging
             
             if similarity_result == "True":
                 matched_word = ans
@@ -105,7 +107,7 @@ def evaluation_function(response, answer, param=None):
     response = parse_input(response)
     answer = parse_input(answer)
 
-
+    print("response: ", response, "; answer: ", answer) #TODO: debugging
 
     
     # Ensure config is provided
@@ -174,6 +176,8 @@ def evaluation_function(response, answer, param=None):
         return {"is_correct": False, "error": "Invalid input: response and answer must be lists of strings."}
     
     is_correct, correct_answers, incorrect_answers = recursive_evaluation(response, answer, chain, parser)
+    print("correct_answers: ", correct_answers, "; incorrect_answers: ", incorrect_answers) #TODO: debugging
+
     #check if student is inputting enough answers
     if len(response) < param.response_num_required:
         is_correct = False
