@@ -117,6 +117,8 @@ def evaluation_function(response, answer, param=None):
         param = Param()
     elif type(param) is dict:
         print("param is dict, load them...") #TODO: debugging
+        if "param" in param:
+            param = param["param"]
         param = Param(**param)
     print("param: ", param) #TODO: debugging
     
