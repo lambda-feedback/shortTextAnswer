@@ -78,9 +78,10 @@ def recursive_evaluation(responses, answers, chain, parser):
         for ans in list(remaining_answers):  # Convert set to list for iteration
             eval_result = chain.invoke({"word": res, "target": ans})
             eval_result_content = eval_result.content
+            print("eval_result_content: ", eval_result_content) #TODO: debugging
             similarity_result = parser.invoke(eval_result_content)
 
-            print("eval_result_content: ", eval_result_content, "; similarity_result: ", similarity_result, "; res: ", res, "; ans: ", ans) #TODO: debugging
+            print("similarity_result: ", similarity_result, "; res: ", res, "; ans: ", ans) #TODO: debugging
             
             if similarity_result == "True":
                 matched_word = ans
@@ -117,7 +118,9 @@ def evaluation_function(response, answer, param=None):
         param = Param(**param)
     
     # Initialize LLM
+    print("Setting up LLM...") #TODO: debugging
     llm = setup_llm(param)
+    print("LLM setup done") #TODO: debugging
     
     # Define prompt template
     prompt_template = PromptTemplate(
@@ -174,7 +177,9 @@ def evaluation_function(response, answer, param=None):
     if not (isinstance(response, list) and all(isinstance(item, str) for item in response) and 
             isinstance(answer, list) and all(isinstance(item, str) for item in answer)):
         return {"is_correct": False, "error": "Invalid input: response and answer must be lists of strings."}
-    
+    print("Valid Inputs received: response: ", response, "; answer: ", answer) #TODO: debugging
+
+    print("Starting recursive evaluation...") #TODO: debugging
     is_correct, correct_answers, incorrect_answers = recursive_evaluation(response, answer, chain, parser)
     print("correct_answers: ", correct_answers, "; incorrect_answers: ", incorrect_answers) #TODO: debugging
 
