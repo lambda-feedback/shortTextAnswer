@@ -113,16 +113,15 @@ def evaluation_function(response, answer, param=None):
     
     # Ensure config is provided
     if param is None:
-        print("param is None, set default...") #TODO: debugging
+        print("param is None, setting default...")  # TODO: debugging
         param = Param()
-    elif type(param) is dict:
-        if "param" in param:
-            param = param["param"]
+    elif isinstance(param, dict):
+        param = param.get("param", None)
         if param is None:
-            print("param is None, set default...") #TODO: debugging
+            print("param is None, setting default...")  # TODO: debugging
             param = Param()
         else:
-            print("param is dict, load param: ", param) #TODO: debugging
+            print("param is dict, loading param: ", param)  # TODO: debugging
             param = Param(**param)
     print("param: ", param) #TODO: debugging
     
