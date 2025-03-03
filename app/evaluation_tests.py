@@ -86,7 +86,7 @@ class TestEvaluationFunction(unittest.TestCase):
     def test_short_response(self):
         """Test how the model handles negation."""
         response = "yellow"
-        answer = "yellow,blue"
+        answer = "yellow;blue"
 
         result = evaluation_function(response, answer, self.param)
 
