@@ -19,7 +19,7 @@ class Param:
         self.huggingfacehub_api_token = os.getenv("HUGGINGFACE_AUTHORIZATION")
         self.endpoint_3_1_8B = os.getenv("LLAMA3_1_8B_ENDPOINT")
 
-        self.response_num_required = 0 #initialise it with 0
+        #self.response_num_required = 0 #initialise it with 0
 
 
 def parse_input(input_data):
@@ -78,10 +78,10 @@ def recursive_evaluation(responses, answers, chain, parser):
         for ans in list(remaining_answers):  # Convert set to list for iteration
             eval_result = chain.invoke({"word": res, "target": ans})
             eval_result_content = eval_result.content
-            print("eval_result_content: ", eval_result_content) #TODO: debugging
+            #print("eval_result_content: ", eval_result_content) #TODO: debugging
             similarity_result = parser.invoke(eval_result_content)
 
-            print("similarity_result: ", similarity_result, "; res: ", res, "; ans: ", ans) #TODO: debugging
+            #print("similarity_result: ", similarity_result, "; res: ", res, "; ans: ", ans) #TODO: debugging
             
             if similarity_result == "True":
                 matched_word = ans
@@ -102,13 +102,11 @@ def evaluation_function(response, answer, param=None):
     """Evaluates the given response against the answer using LLaMA 3 or GPT-4o."""
     start_time = time.process_time()
 
-
-
     #split the response and answer into lists with semicolons
     response = parse_input(response)
     answer = parse_input(answer)
 
-    print("response: ", response, "; answer: ", answer, "; param: ", param) #TODO: debugging
+    # print("response: ", response, "; answer: ", answer, "; param: ", param) #TODO: debugging
 
     
     # Ensure config is provided
@@ -185,14 +183,14 @@ def evaluation_function(response, answer, param=None):
     if not (isinstance(response, list) and all(isinstance(item, str) for item in response) and 
             isinstance(answer, list) and all(isinstance(item, str) for item in answer)):
         return {"is_correct": False, "error": "Invalid input: response and answer must be lists of strings."}
-    print("Valid Inputs received: response: ", response, "; answer: ", answer) #TODO: debugging
+    # print("Valid Inputs received: response: ", response, "; answer: ", answer) #TODO: debugging
 
-    print("Starting recursive evaluation...") #TODO: debugging
+    # print("Starting recursive evaluation...") #TODO: debugging
     is_correct, correct_answers, incorrect_answers = recursive_evaluation(response, answer, chain, parser)
-    print("correct_answers: ", correct_answers, "; incorrect_answers: ", incorrect_answers) #TODO: debugging
+    # print("correct_answers: ", correct_answers, "; incorrect_answers: ", incorrect_answers) #TODO: debugging
 
     #check if student is inputting enough answers
-    if len(response) < param.response_num_required:
+    if len(response) < len(answer):
         is_correct = False
     
     return {
@@ -210,8 +208,10 @@ def evaluation_function(response, answer, param=None):
 if __name__ == "__main__":
     custom_config = Param()
     print(evaluation_function(
-        "speed,red", #response
-        "red, velocity", #answer
+        "Velocity",
+        "Speed",
+        # "speed,red", #response
+        # "red, velocity", #answer
         custom_config
     ))
     

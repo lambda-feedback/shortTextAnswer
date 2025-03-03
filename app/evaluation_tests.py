@@ -43,12 +43,7 @@ class TestEvaluationFunction(unittest.TestCase):
         """Test if a response too short is marked incorrect."""
         response = "Density;Velocity;Viscosity"
         answer = "Density;Velocity;Viscosity;Length"
-
-        self.param.response_num_required = 4
         result = evaluation_function(response, answer, self.param)
-
-        self.param.response_num_required = 0
-
         self.assertFalse(result.get("is_correct"))
 
     def test_synonyms_match(self):
@@ -62,7 +57,7 @@ class TestEvaluationFunction(unittest.TestCase):
 
     def test_exact_match_requirement(self):
         """Test enforcing exact match on keystrings."""
-        response = "density;speed;viscosity;length"
+        response = "density;velocity;viscosity;length"
         answer = "Density;Velocity;Viscosity;Length"
 
         result = evaluation_function(response, answer, self.param)
@@ -82,6 +77,16 @@ class TestEvaluationFunction(unittest.TestCase):
         """Test how the model handles negation."""
         response = "not light blue;dark blue"
         answer = "light blue"
+
+        result = evaluation_function(response, answer, self.param)
+
+
+        self.assertFalse(result.get("is_correct"))
+
+    def test_short_response(self):
+        """Test how the model handles negation."""
+        response = "yellow"
+        answer = "yellow,blue"
 
         result = evaluation_function(response, answer, self.param)
 
