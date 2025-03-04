@@ -24,16 +24,16 @@ class TestEvaluationFunction(unittest.TestCase):
 
     def test_basic_correct_response(self):
         """Test if semantically similar responses are marked correct."""
-        response = "Density;Velocity;Viscosity;Length"
-        answer = "Density;Velocity;Viscosity;Length"
+        response = "Density,Velocity,Viscosity,Length"
+        answer = "Density,Velocity,Viscosity,Length"
         result = evaluation_function(response, answer, self.param)
 
         self.assertTrue(result.get("is_correct"))
 
     def test_basic_incorrect_response(self):
         """Test if semantically different responses are marked incorrect."""
-        response = "Mass;Speed;Friction;Force"
-        answer = "Density;Velocity;Viscosity;Length"
+        response = "Mass,Speed,Friction,Force"
+        answer = "Density,Velocity,Viscosity,Length"
         result = evaluation_function(response, answer, self.param)
 
 
@@ -41,8 +41,8 @@ class TestEvaluationFunction(unittest.TestCase):
 
     def test_partial_match(self):
         """Test if a response too short is marked incorrect."""
-        response = "Density;Velocity;Viscosity"
-        answer = "Density;Velocity;Viscosity;Length"
+        response = "Density,Velocity,Viscosity"
+        answer = "Density,Velocity,Viscosity,Length"
         result = evaluation_function(response, answer, self.param)
         self.assertFalse(result.get("is_correct"))
 
@@ -57,8 +57,8 @@ class TestEvaluationFunction(unittest.TestCase):
 
     def test_exact_match_requirement(self):
         """Test enforcing exact match on keystrings."""
-        response = "density;velocity;viscosity;length"
-        answer = "Density;Velocity;Viscosity;Length"
+        response = "density,velocity,viscosity,length"
+        answer = "Density,Velocity,Viscosity,Length"
 
         result = evaluation_function(response, answer, self.param)
 
@@ -66,8 +66,8 @@ class TestEvaluationFunction(unittest.TestCase):
 
     def test_should_not_contain(self):
         """Test if a response with a prohibited keyword fails."""
-        response = "density;velocity;viscosity;length;direction"
-        answer = "Density;Velocity;Viscosity;Length"
+        response = "density,velocity,viscosity,length,direction"
+        answer = "Density,Velocity,Viscosity,Length"
 
         result = evaluation_function(response, answer, self.param)
 
@@ -75,7 +75,7 @@ class TestEvaluationFunction(unittest.TestCase):
 
     def test_negation_handling(self):
         """Test how the model handles negation."""
-        response = "not light blue;dark blue"
+        response = "not light blue,dark blue"
         answer = "light blue"
 
         result = evaluation_function(response, answer, self.param)
@@ -86,7 +86,7 @@ class TestEvaluationFunction(unittest.TestCase):
     def test_short_response(self):
         """Test how the model handles negation."""
         response = "yellow"
-        answer = "yellow;blue"
+        answer = "yellow,blue"
 
         result = evaluation_function(response, answer, self.param)
 
@@ -95,8 +95,8 @@ class TestEvaluationFunction(unittest.TestCase):
 
     def test_performance(self):
         """Ensure that processing time is reasonable."""
-        response = "Density;Velocity;Viscosity;Length"
-        answer = "Density;Velocity;Viscosity;Length"
+        response = "Density,Velocity,Viscosity,Length"
+        answer = "Density,Velocity,Viscosity,Length"
 
         result = evaluation_function(response, answer, self.param)
 
