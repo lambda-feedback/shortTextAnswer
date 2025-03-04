@@ -91,3 +91,28 @@ Output
     }, 
     'feedback': "Cannot determine if the answer is correct. Please provide more information about 'proton'"}
 ```
+
+
+### Listing Question Format
+
+For the type of listing question, input to the response area or answer is expected to be in the shape of a string, with elements separated by semi-colons (`;`)Words and phrases are distinguished based on semantic similarity rather than exact matches. Additionally, responses shorter than the expected answers will be classified as incorrect, even if they contain partial correctness. However, correct answers will be provided in the feedback for reference:
+
+Examples:
+- `'apple;pear;juice'`
+- `'pale white;light white;dim white'`
+
+The return format will be structured as follows:
+
+```json
+{
+    "is_correct": true,
+    "result": {
+        "response": {
+            "correct": correct_answers,
+            "incorrect": incorrect_answers
+        },
+        "processing_time": time.process_time() - start_time,
+        "method": "LLM-based comparison"
+    },
+    "feedback": "Correct answers: {correct_answers}. Incorrect answers: {incorrect_answers}."
+}
