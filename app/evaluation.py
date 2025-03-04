@@ -35,7 +35,7 @@ def parse_input(input_data):
     if isinstance(input_data, str):
         if input_data == "":
             return []
-        return [item for item in input_data.split(';') if item]
+        return [item for item in input_data.split(',') if item]
     elif isinstance(input_data, list) and all(isinstance(sublist, list) for sublist in input_data):
         return [item for sublist in input_data for item in sublist]
     else:
