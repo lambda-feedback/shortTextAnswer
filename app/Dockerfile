@@ -52,7 +52,7 @@ COPY brown_length ./app/
 COPY word_freqs ./app/
 COPY w2v ./app/
 COPY evaluation.py ./app/
-COPY evaluation_tests.py ./app/
+COPY evaluation_test.py ./app/
 
 # Copy Documentation
 COPY docs/dev.md ./app/docs/dev.md

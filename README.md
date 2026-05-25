@@ -4,6 +4,9 @@ This template repository contains the boilerplate code needed in order to create
 
 This version is specifically for python, however the ultimate goal is to make similar boilerplate repositories in any language, allowing tutors the freedom to code in what they feel most comfortable with.
 
+## Deployment
+[![Create Release Request](https://img.shields.io/badge/Create%20Release%20Request-blue?style=for-the-badge)](https://github.com/lambda-feedback/shortTextAnswer/issues/new?template=release-request.yml)
+
 ## Table of Contents
 - [Evaluation Function Template Repository](#evaluation-function-template-repository)
   - [Table of Contents](#table-of-contents)
@@ -24,7 +27,7 @@ app/
     __init__.py
     evaluation.py # Script containing the main evaluation_function
     docs.md # Documentation page for this function (required)
-    evaluation_tests.py # Unittests for the main evaluation_function
+    evaluation_test.py # Unittests for the main evaluation_function
     requirements.txt # list of packages needed for algorithm.py
     Dockerfile # for building whole image to deploy to AWS
 
