@@ -34,6 +34,10 @@ jobs:
           .venv/bin/pip install pytest
           .venv/bin/pip install -r app/requirements.txt
 
+      - name: Download NLTK data
+        run: |
+          .venv/bin/python -m nltk.downloader wordnet word2vec_sample brown stopwords punkt punkt_tab
+
 
       - name: Lint with flake8
         run: |
