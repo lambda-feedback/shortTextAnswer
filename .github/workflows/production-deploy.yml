@@ -42,7 +42,7 @@ jobs:
       environment: "production"
       version-bump: ${{ inputs.version-bump }}
       branch: ${{ inputs.branch }}
-      run-database-tests: false
+      run-database-tests: true
       seed: ${{ inputs.seed }}
       request_delay: ${{ inputs.request_delay }}
       max_concurrency: ${{ inputs.max_concurrency }}
